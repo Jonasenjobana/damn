@@ -6,6 +6,8 @@ import { CommonModule } from './common/common.module';
 import { ArticleModule } from './modules/article/article.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { VisitorModule } from './modules/visitor/visitor.module';
+import { LLMModule } from './modules/llm/llm.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -19,12 +21,14 @@ import { VisitorModule } from './modules/visitor/visitor.module';
       migrations: ['src/migrations/*.ts'],
       migrationsRun: process.env.NODE_ENV === 'production',
     }),
+    ConfigModule.forRoot(),
     VisitorModule,
     CommonModule,
     UserModule,
     AuthModule,
     ArticleModule,
     UploadModule,
+    LLMModule,
   ],
 })
 export class AppModule {}

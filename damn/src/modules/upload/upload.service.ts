@@ -80,4 +80,15 @@ export class UploadService {
     const filePath = path.join(this.uploadPath, filename);
     return fs.existsSync(filePath);
   }
+
+  async findByFilename(filename: string): Promise<UploadFile | null> {
+    return this.uploadFileRepo.findOne({
+      where: { filename, is_deleted: 0 },
+    });
+  }
+
+  async readFileContent(filename: string): Promise<Buffer> {
+    const filePath = this.getFilePath(filename);
+    return fs.promises.readFile(filePath);
+  }
 }

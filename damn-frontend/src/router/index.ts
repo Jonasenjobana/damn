@@ -49,6 +49,11 @@ const routes: RouteRecordRaw[] = [
         name: 'ArticleTypeManage',
         component: () => import('@/views/admin/ArticleTypeManage.vue'),
       },
+      {
+        path: 'llm-chat',
+        name: 'LLMChat',
+        component: () => import('@/views/admin/LLMChat.vue'),
+      },
     ],
   },
 ]
