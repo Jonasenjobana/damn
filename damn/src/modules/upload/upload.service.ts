@@ -16,7 +16,14 @@ interface MulterFile {
 
 @Injectable()
 export class UploadService {
-  private readonly uploadPath = path.join(process.cwd(), 'resource', 'images');
+  private readonly uploadPath = path.resolve(
+    __dirname,
+    '..',
+    '..',
+    '..',
+    'resource',
+    'images',
+  );
 
   constructor(
     @InjectRepository(UploadFile)
