@@ -128,26 +128,16 @@ const handleCommand = async (command: string) => {
 <style scoped>
 .admin-layout {
   min-height: 100vh;
-  background: #f1f5f9;
+  background: var(--bg-base);
 }
 
 .aside {
-  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+  background: #111827;
+  box-shadow: 2px 0 16px rgba(15, 23, 42, 0.16);
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow: hidden;
-}
-
-.aside::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 1px;
-  height: 100%;
-  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  border-right: 1px solid rgba(148, 163, 184, 0.2);
 }
 
 .logo {
@@ -156,19 +146,19 @@ const handleCommand = async (command: string) => {
   align-items: center;
   padding: 0 24px;
   gap: 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.28);
 }
 
 .logo-icon {
   width: 42px;
   height: 42px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--brand);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: none;
 }
 
 .logo-icon .el-icon {
@@ -213,14 +203,14 @@ const handleCommand = async (command: string) => {
   transform: translateY(-50%) scaleY(0);
   width: 3px;
   height: 24px;
-  background: linear-gradient(180deg, #667eea, #764ba2);
+  background: var(--brand);
   border-radius: 0 2px 2px 0;
   transition: all 0.3s ease;
 }
 
 .menu .el-menu-item:hover {
-  background: rgba(102, 126, 234, 0.1) !important;
-  color: #e2e8f0;
+  background: rgba(14, 165, 164, 0.1) !important;
+  color: #f1f5f9;
 }
 
 .menu .el-menu-item:hover::before {
@@ -228,8 +218,8 @@ const handleCommand = async (command: string) => {
 }
 
 .menu .el-menu-item.is-active {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%) !important;
-  color: #667eea;
+  background: rgba(14, 165, 164, 0.2) !important;
+  color: #99f6e4;
 }
 
 .menu .el-menu-item.is-active::before {
@@ -269,7 +259,7 @@ const handleCommand = async (command: string) => {
 }
 
 .title-icon {
-  color: #667eea;
+  color: var(--brand);
   font-size: 20px;
 }
 
@@ -306,12 +296,12 @@ const handleCommand = async (command: string) => {
 .user-avatar {
   width: 44px;
   height: 44px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #0f172a;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+  box-shadow: none;
 }
 
 .user-avatar .el-icon {
@@ -347,7 +337,7 @@ const handleCommand = async (command: string) => {
 }
 
 .main-content {
-  background: #f1f5f9;
+  background: var(--bg-base);
   padding: 24px 32px;
   overflow-y: auto;
   flex: 1;
@@ -375,7 +365,7 @@ const handleCommand = async (command: string) => {
 
 :deep(.el-dropdown-menu__item:hover) {
   background: #f1f5f9;
-  color: #667eea;
+  color: var(--brand-strong);
 }
 
 :deep(.el-dropdown-menu__item .el-icon) {

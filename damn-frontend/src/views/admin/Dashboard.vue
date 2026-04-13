@@ -83,10 +83,7 @@ function initBarChart() {
         type: 'bar',
         data: sortedArticles.map((a) => a.viewCount),
         itemStyle: {
-          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: '#667eea' },
-            { offset: 1, color: '#764ba2' },
-          ]),
+          color: '#0f766e',
           borderRadius: [8, 8, 0, 0]
         },
         label: {
@@ -359,9 +356,10 @@ onBeforeUnmount(() => {
 .stat-card {
   margin-bottom: 24px;
   border-radius: 16px;
-  border: none;
+  border: 1px solid var(--line-soft);
   overflow: hidden;
   transition: all 0.3s ease;
+  box-shadow: none;
 }
 
 .stat-card:hover {
@@ -385,7 +383,7 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
 }
 
 .stat-icon {
@@ -393,7 +391,7 @@ onBeforeUnmount(() => {
 }
 
 .card-articles .stat-icon-wrapper {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #0f766e;
 }
 
 .card-articles .stat-icon {
@@ -401,7 +399,7 @@ onBeforeUnmount(() => {
 }
 
 .card-views .stat-icon-wrapper {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: #0891b2;
 }
 
 .card-views .stat-icon {
@@ -409,7 +407,7 @@ onBeforeUnmount(() => {
 }
 
 .card-likes .stat-icon-wrapper {
-  background: linear-gradient(135deg, #f56c6c 0%, #e74c3c 100%);
+  background: #ef4444;
 }
 
 .card-likes .stat-icon {
@@ -417,7 +415,7 @@ onBeforeUnmount(() => {
 }
 
 .card-duration .stat-icon-wrapper {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  background: #d97706;
 }
 
 .card-duration .stat-icon {
@@ -425,7 +423,7 @@ onBeforeUnmount(() => {
 }
 
 .card-visitors .stat-icon-wrapper {
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  background: #334155;
 }
 
 .card-visitors .stat-icon {
@@ -435,8 +433,9 @@ onBeforeUnmount(() => {
 .chart-card,
 .section-card {
   border-radius: 16px;
-  border: none;
+  border: 1px solid var(--line-soft);
   overflow: hidden;
+  box-shadow: none;
 }
 
 .chart-card :deep(.el-card__body),
@@ -467,7 +466,7 @@ onBeforeUnmount(() => {
 
 .header-icon {
   font-size: 20px;
-  color: #667eea;
+  color: var(--brand-strong);
 }
 
 .header-icon.warning {
@@ -504,20 +503,20 @@ onBeforeUnmount(() => {
     align-items: center;
     gap: 16px;
     padding: 16px 20px;
-    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    background: #fef2f2;
     border-radius: 12px;
     border: 1px solid #fecaca;
     transition: all 0.2s ease;
 
     &:hover {
-      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+      background: #fee2e2;
       transform: translateX(4px);
     }
   }
 
   .error-path {
     font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
-    color: #667eea;
+    color: var(--brand-strong);
     flex: 1;
     font-weight: 500;
   }
