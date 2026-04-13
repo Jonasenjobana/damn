@@ -1,117 +1,177 @@
 <template>
   <div class="home-page">
-    <div class="page-header">
-      <div class="header-decoration">
-        <div class="decoration-circle circle-1"></div>
-        <div class="decoration-circle circle-2"></div>
-        <div class="decoration-circle circle-3"></div>
+    <section class="hero glass-card animate-fade-up">
+      <div class="hero-left">
+        <p class="eyebrow">Damn Blog 2.0</p>
+        <h2>Clean, calm, and a little futuristic</h2>
+        <p class="hero-subtitle">
+          Added article search, category filtering, and smart sorting for a more usable browsing flow.
+        </p>
       </div>
-      <div class="header-content">
-        <h2 class="page-title">博客文章</h2>
-        <p class="page-subtitle">探索精彩内容，发现无限可能</p>
-        <div class="header-divider"></div>
+      <div class="hero-stats">
+        <div class="stat-card">
+          <span class="label">Articles</span>
+          <strong>{{ articles.length }}</strong>
+        </div>
+        <div class="stat-card">
+          <span class="label">Pinned</span>
+          <strong>{{ pinnedCount }}</strong>
+        </div>
+        <div class="stat-card">
+          <span class="label">Likes</span>
+          <strong>{{ totalLikes }}</strong>
+        </div>
       </div>
-    </div>
+    </section>
 
-    <el-row :gutter="24" v-loading="loading" class="articles-grid">
+    <section class="filters glass-card">
+      <el-input
+        v-model="keyword"
+        clearable
+        placeholder="Search title / content / category"
+        class="search-input"
+      >
+        <template #prefix>
+          <el-icon><Search /></el-icon>
+        </template>
+      </el-input>
+
+      <el-select v-model="typeFilter" placeholder="All categories" class="filter-item">
+        <el-option label="All categories" value="all" />
+        <el-option
+          v-for="type in articleTypes"
+          :key="type"
+          :label="type"
+          :value="type"
+        />
+      </el-select>
+
+      <el-select v-model="sortBy" placeholder="Sort by" class="filter-item">
+        <el-option label="Newest" value="newest" />
+        <el-option label="Most viewed" value="views" />
+        <el-option label="Most liked" value="likes" />
+      </el-select>
+    </section>
+
+    <el-row :gutter="18" v-loading="loading" class="articles-grid">
       <el-col
-        v-for="article in articles"
+        v-for="article in filteredArticles"
         :key="article.id"
         :xs="24"
         :sm="12"
-        :md="8"
         :lg="8"
-        class="article-col"
       >
-        <div class="article-card" @click="goToArticle(article.id)">
-          <div class="card-cover-wrapper">
-            <div class="article-cover" v-if="article.cover">
-              <el-image :src="article.cover" fit="cover" :lazy="true">
-                <template #error>
-                  <div class="image-fallback">
-                    <el-icon><Picture /></el-icon>
-                  </div>
-                </template>
-              </el-image>
-              <div class="cover-overlay"></div>
-            </div>
-            <div class="article-cover-empty" v-else>
+        <article class="article-card glass-card" @click="goToArticle(article.id)">
+          <div class="article-cover" :class="{ empty: !article.cover }">
+            <el-image v-if="article.cover" :src="article.cover" fit="cover" :lazy="true">
+              <template #error>
+                <div class="cover-fallback">
+                  <el-icon><Picture /></el-icon>
+                </div>
+              </template>
+            </el-image>
+            <div v-else class="cover-fallback">
               <el-icon><Document /></el-icon>
-              <div class="cover-overlay"></div>
             </div>
-            <div class="card-tags">
-              <el-tag v-if="article.isPinned === 1" type="danger" size="small" class="pin-tag" effect="dark">
+
+            <div class="badge-row">
+              <el-tag v-if="article.isPinned === 1" size="small" effect="dark" class="pin-tag">
                 <el-icon><Top /></el-icon>
-                置顶
+                Pin
               </el-tag>
-              <el-tag size="small" class="type-tag" effect="light">
-                {{ article.articleTypeName }}
-              </el-tag>
+              <el-tag size="small" effect="plain">{{ article.articleTypeName || 'General' }}</el-tag>
             </div>
           </div>
-          <div class="article-content">
-            <h3 class="article-title">{{ article.title }}</h3>
-            <p class="article-excerpt">{{ getExcerpt(article.content) }}</p>
+
+          <div class="article-body">
+            <h3>{{ article.title }}</h3>
+            <p>{{ getExcerpt(article.content) }}</p>
           </div>
-          <div class="card-footer">
-            <div class="article-stats">
-              <span class="stat-item">
-                <el-icon><View /></el-icon>
-                {{ article.viewCount || 0 }}
-              </span>
-              <span class="stat-item">
-                <el-icon><Star /></el-icon>
-                {{ article.likeCount || 0 }}
-              </span>
-            </div>
-            <div class="article-date">
-              <el-icon><Calendar /></el-icon>
-              {{ formatDate(article.createTime) }}
-            </div>
+
+          <div class="article-meta">
+            <span><el-icon><View /></el-icon>{{ article.viewCount || 0 }}</span>
+            <span><el-icon><Star /></el-icon>{{ article.likeCount || 0 }}</span>
+            <span><el-icon><Calendar /></el-icon>{{ formatDate(article.createTime) }}</span>
           </div>
-        </div>
+        </article>
       </el-col>
     </el-row>
 
-    <el-empty v-if="!loading && articles.length === 0" description="暂无文章" class="empty-state">
-      <el-button type="primary" @click="loadArticles" class="refresh-btn">
-        <el-icon><RefreshLeft /></el-icon>
-        刷新
-      </el-button>
+    <el-empty v-if="!loading && filteredArticles.length === 0" description="No matched articles" class="empty">
+      <el-button type="primary" @click="resetFilters">Reset filters</el-button>
     </el-empty>
-
-    <div class="loading-wrapper" v-if="loading && articles.length > 0">
-      <el-skeleton :rows="3" animated />
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Picture, View, Star, Document, Top, Calendar, RefreshLeft } from '@element-plus/icons-vue'
+import {
+  Picture,
+  View,
+  Star,
+  Document,
+  Top,
+  Calendar,
+  Search,
+} from '@element-plus/icons-vue'
 import { articleAPI } from '@/api/modules/article'
 import type { Article } from '@/types/article'
 
 const router = useRouter()
 const articles = ref<Article[]>([])
 const loading = ref(false)
+const keyword = ref('')
+const typeFilter = ref('all')
+const sortBy = ref<'newest' | 'views' | 'likes'>('newest')
 
-const getExcerpt = (content: string, maxLength: number = 100) => {
-  if (!content) return ''
-  const text = content.replace(/[#*`\[\]]/g, '').trim()
-  return text.length > maxLength ? text.substring(0, maxLength) + '...' : text
+const articleTypes = computed<string[]>(() => {
+  const types = new Set(
+    articles.value
+      .map((item) => item.articleTypeName)
+      .filter((item): item is string => typeof item === 'string' && item.trim().length > 0),
+  )
+  return Array.from(types)
+})
+
+const pinnedCount = computed(() => articles.value.filter((item) => item.isPinned === 1).length)
+const totalLikes = computed(() => articles.value.reduce((sum, item) => sum + (item.likeCount || 0), 0))
+
+const filteredArticles = computed(() => {
+  const source = articles.value.filter((item) => {
+    const matchesKeyword = [item.title, item.content, item.articleTypeName || '']
+      .join(' ')
+      .toLowerCase()
+      .includes(keyword.value.trim().toLowerCase())
+    const matchesType = typeFilter.value === 'all' || item.articleTypeName === typeFilter.value
+    return matchesKeyword && matchesType
+  })
+
+  return source.sort((a, b) => {
+    if (a.isPinned !== b.isPinned) return b.isPinned - a.isPinned
+
+    if (sortBy.value === 'views') return (b.viewCount || 0) - (a.viewCount || 0)
+    if (sortBy.value === 'likes') return (b.likeCount || 0) - (a.likeCount || 0)
+    return new Date(b.createTime).getTime() - new Date(a.createTime).getTime()
+  })
+})
+
+const getExcerpt = (content: string, maxLength = 88) => {
+  const text = (content || '').replace(/[#*`\[\]()]/g, '').replace(/\s+/g, ' ').trim()
+  return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text
 }
 
 const formatDate = (dateString: string) => {
-  if (!dateString) return ''
   const date = new Date(dateString)
-  return date.toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
+  if (Number.isNaN(date.getTime())) return '-'
+  return date.toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' })
+}
+
+const resetFilters = () => {
+  keyword.value = ''
+  typeFilter.value = 'all'
+  sortBy.value = 'newest'
 }
 
 const loadArticles = async () => {
@@ -120,12 +180,11 @@ const loadArticles = async () => {
     const response = await articleAPI.getList()
     if (response.rlt === '0') {
       articles.value = response.data || []
-    } else {
-      ElMessage.error(response.msg || '加载文章失败')
+      return
     }
+    ElMessage.error(response.msg || 'Failed to load articles')
   } catch (error: any) {
-    console.error('Failed to load articles:', error)
-    ElMessage.error(error.message || '加载文章失败')
+    ElMessage.error(error?.message || 'Failed to load articles')
   } finally {
     loading.value = false
   }
@@ -135,324 +194,204 @@ const goToArticle = (id: number) => {
   router.push(`/article/${id}`)
 }
 
-onMounted(() => {
-  loadArticles()
-})
+onMounted(loadArticles)
 </script>
 
 <style scoped>
 .home-page {
-  animation: fadeIn 0.5s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 20px;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.hero {
+  padding: 28px;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 16px;
 }
 
-.page-header {
-  text-align: center;
-  margin-bottom: 60px;
-  position: relative;
-  padding: 40px 0;
+.hero-left h2 {
+  font-size: clamp(26px, 3vw, 36px);
+  line-height: 1.18;
+  margin: 8px 0 10px;
 }
 
-.header-decoration {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow: hidden;
-  pointer-events: none;
+.eyebrow {
+  display: inline-flex;
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand) 12%, white);
+  color: var(--brand-strong);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
 }
 
-.decoration-circle {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  animation: float 6s ease-in-out infinite;
+.hero-subtitle {
+  color: var(--text-secondary);
+  max-width: 560px;
 }
 
-.circle-1 {
-  width: 120px;
-  height: 120px;
-  top: -20px;
-  left: 10%;
-  animation-delay: 0s;
+.hero-stats {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
 }
 
-.circle-2 {
-  width: 80px;
-  height: 80px;
-  top: 40px;
-  right: 15%;
-  animation-delay: 2s;
+.stat-card {
+  min-width: 92px;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--bg-soft);
+  border: 1px solid var(--line-soft);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
-.circle-3 {
-  width: 60px;
-  height: 60px;
-  bottom: 10px;
-  left: 25%;
-  animation-delay: 4s;
+.stat-card .label {
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-20px) rotate(10deg);
-  }
+.stat-card strong {
+  font-size: 20px;
+  color: var(--text-primary);
 }
 
-.header-content {
-  position: relative;
-  z-index: 1;
+.filters {
+  display: grid;
+  grid-template-columns: minmax(230px, 1fr) 170px 170px;
+  gap: 12px;
+  padding: 14px;
+  position: sticky;
+  top: 92px;
+  z-index: 10;
 }
 
-.page-title {
-  font-size: 42px;
-  font-weight: 800;
-  color: #fff;
-  margin: 0 0 12px 0;
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  letter-spacing: 2px;
-}
-
-.page-subtitle {
-  font-size: 18px;
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0 0 24px 0;
-  font-weight: 400;
-}
-
-.header-divider {
-  width: 80px;
-  height: 4px;
-  background: linear-gradient(90deg, transparent, #fff, transparent);
-  margin: 0 auto;
-  border-radius: 2px;
+.search-input,
+.filter-item {
+  width: 100%;
 }
 
 .articles-grid {
-  margin-bottom: 40px;
-}
-
-.article-col {
-  margin-bottom: 24px;
+  margin-top: 2px;
 }
 
 .article-card {
   height: 100%;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 20px;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: transform 0.28s var(--ease-smooth), box-shadow 0.28s var(--ease-smooth);
 }
 
 .article-card:hover {
-  transform: translateY(-12px) scale(1.02);
-  box-shadow: 0 20px 40px rgba(102, 126, 234, 0.25);
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-strong);
 }
 
-.card-cover-wrapper {
+.article-cover {
   position: relative;
-  width: 100%;
-  height: 200px;
+  height: 172px;
   overflow: hidden;
 }
 
-.article-cover,
-.article-cover-empty {
+.article-cover :deep(.el-image),
+.article-cover :deep(.el-image__inner) {
   width: 100%;
   height: 100%;
-  position: relative;
 }
 
-.article-cover .el-image {
+.article-cover.empty {
+  background: linear-gradient(145deg, color-mix(in srgb, var(--brand) 45%, white), var(--brand-soft));
+}
+
+.cover-fallback {
   width: 100%;
   height: 100%;
-  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  display: grid;
+  place-items: center;
+  color: white;
+  font-size: 34px;
 }
 
-.article-card:hover .article-cover .el-image {
-  transform: scale(1.1);
-}
-
-.article-cover-empty {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.article-cover-empty .el-icon {
-  font-size: 64px;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.cover-overlay {
+.badge-row {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.3) 100%);
-  pointer-events: none;
-}
-
-.card-tags {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  right: 12px;
+  top: 10px;
+  left: 10px;
   display: flex;
   gap: 8px;
-  align-items: center;
-  z-index: 10;
 }
 
-.pin-tag,
-.type-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-weight: 600;
+.pin-tag {
+  background: var(--danger);
   border: none;
 }
 
-.article-content {
-  padding: 24px;
-  min-height: 140px;
+.article-body {
+  padding: 16px 16px 10px;
 }
 
-.article-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #1a1a2e;
-  margin: 0 0 12px 0;
-  line-height: 1.4;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.article-body h3 {
+  font-size: 18px;
+  line-height: 1.35;
+  color: var(--text-primary);
+  margin-bottom: 8px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  transition: color 0.3s ease;
-}
-
-.article-card:hover .article-title {
-  color: #667eea;
-}
-
-.article-excerpt {
-  font-size: 14px;
-  color: #6b7280;
-  line-height: 1.7;
-  margin: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
+}
+
+.article-body p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-size: 14px;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.card-footer {
+.article-meta {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 24px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-  background: rgba(102, 126, 234, 0.02);
-}
-
-.article-stats {
-  display: flex;
-  gap: 20px;
-}
-
-.stat-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  color: #9ca3af;
-  font-weight: 500;
-  transition: color 0.3s ease;
-}
-
-.article-card:hover .stat-item {
-  color: #667eea;
-}
-
-.stat-item .el-icon {
-  font-size: 16px;
-}
-
-.article-date {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  padding: 0 16px 14px;
+  color: var(--text-muted);
   font-size: 13px;
-  color: #d1d5db;
 }
 
-.article-date .el-icon {
-  font-size: 14px;
-}
-
-.empty-state {
-  padding: 80px 0;
-}
-
-.empty-state :deep(.el-empty__description) {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.refresh-btn {
-  margin-top: 20px;
-  padding: 12px 32px;
-  font-size: 15px;
-  font-weight: 600;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.2);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  color: #fff;
-  transition: all 0.3s ease;
-}
-
-.refresh-btn:hover {
-  background: #fff;
-  color: #667eea;
-  transform: translateY(-2px);
-}
-
-.loading-wrapper {
-  margin-top: 20px;
-  background: rgba(255, 255, 255, 0.95);
-  padding: 30px;
-  border-radius: 20px;
-  backdrop-filter: blur(10px);
-}
-
-.image-fallback {
-  width: 100%;
-  height: 100%;
-  display: flex;
+.article-meta span {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 56px;
+  gap: 5px;
+}
+
+.empty {
+  margin-top: 12px;
+  padding: 24px 0;
+}
+
+@media (max-width: 900px) {
+  .hero {
+    flex-direction: column;
+  }
+
+  .hero-stats {
+    width: 100%;
+  }
+
+  .stat-card {
+    flex: 1;
+  }
+
+  .filters {
+    grid-template-columns: 1fr;
+    top: 84px;
+  }
 }
 </style>

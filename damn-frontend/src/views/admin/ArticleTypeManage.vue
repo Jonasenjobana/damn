@@ -171,12 +171,26 @@ onMounted(async () => {
 
 <style scoped>
 .article-type-manage-container {
-  padding: 20px;
+  padding: 0;
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+:deep(.el-card) {
+  border: 1px solid var(--line-soft);
+  box-shadow: none;
+}
+
+:deep(.el-card__header) {
+  background: #fff;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+:deep(.el-table) {
+  --el-table-header-bg-color: #f8fafc;
 }
 </style>

@@ -1,11 +1,5 @@
 <template>
   <div class="login-container">
-    <div class="background-decoration">
-      <div class="decoration-circle circle-1"></div>
-      <div class="decoration-circle circle-2"></div>
-      <div class="decoration-circle circle-3"></div>
-      <div class="decoration-circle circle-4"></div>
-    </div>
     <div class="login-wrapper">
       <div class="login-card">
         <div class="login-header">
@@ -152,69 +146,9 @@ const goHome = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-  background-attachment: fixed;
+  background: var(--bg-base);
   padding: 20px;
   position: relative;
-  overflow: hidden;
-}
-
-.background-decoration {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.decoration-circle {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  animation: float 8s ease-in-out infinite;
-}
-
-.circle-1 {
-  width: 300px;
-  height: 300px;
-  top: -100px;
-  left: -100px;
-  animation-delay: 0s;
-}
-
-.circle-2 {
-  width: 200px;
-  height: 200px;
-  top: 50%;
-  right: -80px;
-  animation-delay: 2s;
-}
-
-.circle-3 {
-  width: 150px;
-  height: 150px;
-  bottom: -50px;
-  left: 20%;
-  animation-delay: 4s;
-}
-
-.circle-4 {
-  width: 100px;
-  height: 100px;
-  top: 20%;
-  left: 60%;
-  animation-delay: 6s;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg) scale(1);
-  }
-  50% {
-    transform: translateY(-30px) rotate(15deg) scale(1.05);
-  }
 }
 
 .login-wrapper {
@@ -237,13 +171,11 @@ const goHome = () => {
 }
 
 .login-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: #fff;
   border-radius: 24px;
   padding: 48px 40px;
-  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--line-soft);
   position: relative;
   overflow: hidden;
 }
@@ -254,8 +186,8 @@ const goHome = () => {
   top: 0;
   left: 0;
   right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+  height: 1px;
+  background: var(--line-soft);
 }
 
 .login-header {
@@ -270,21 +202,21 @@ const goHome = () => {
 .logo-icon {
   width: 80px;
   height: 80px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--brand);
   border-radius: 20px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+  box-shadow: none;
   animation: pulse 2s ease-in-out infinite;
 }
 
 @keyframes pulse {
   0%, 100% {
-    box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+    transform: scale(1);
   }
   50% {
-    box-shadow: 0 12px 40px rgba(102, 126, 234, 0.6);
+    transform: scale(1.03);
   }
 }
 
@@ -341,9 +273,9 @@ const goHome = () => {
   font-size: 16px;
   font-weight: 700;
   border-radius: 14px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--brand);
   border: none;
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: none;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
@@ -352,8 +284,7 @@ const goHome = () => {
 }
 
 .login-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(102, 126, 234, 0.5);
+  transform: translateY(-1px);
 }
 
 .login-button:active {
@@ -372,15 +303,15 @@ const goHome = () => {
   gap: 6px;
   font-size: 15px;
   font-weight: 600;
-  color: #667eea;
+  color: var(--brand-strong);
   transition: all 0.3s ease;
   padding: 8px 16px;
   border-radius: 10px;
 }
 
 .home-link:hover {
-  background: rgba(102, 126, 234, 0.1);
-  color: #764ba2;
+  background: rgba(15, 118, 110, 0.08);
+  color: var(--brand-strong);
 }
 
 :deep(.el-form-item) {
@@ -403,12 +334,12 @@ const goHome = () => {
 
 :deep(.el-input__wrapper.is-focus) {
   background: #fff;
-  border-color: #667eea;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  border-color: var(--brand);
+  box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
 }
 
 :deep(.el-input__wrapper.is-focus + .input-icon) {
-  color: #667eea;
+  color: var(--brand-strong);
 }
 
 :deep(.el-input__inner) {
@@ -423,12 +354,12 @@ const goHome = () => {
 }
 
 :deep(.el-button--primary) {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--brand);
   border: none;
 }
 
 :deep(.el-button--primary:hover) {
-  background: linear-gradient(135deg, #5568d3 0%, #6a4191 100%);
+  background: var(--brand-strong);
 }
 
 @media (max-width: 640px) {
