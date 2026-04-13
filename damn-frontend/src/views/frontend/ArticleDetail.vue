@@ -2,33 +2,36 @@
   <div class="article-detail" v-loading="loading">
     <div class="article-content-wrapper" v-if="article || !loading">
       <div class="article-main">
-        <el-card v-if="article" class="article-card">
-          <template #header>
-            <div class="article-header">
-              <div class="header-top">
-                <el-tag v-if="article.isPinned === 1" type="danger" size="small">置顶</el-tag>
-                <el-tag size="small">{{ article.articleTypeName }}</el-tag>
-              </div>
-              <h1 class="article-title">{{ article.title }}</h1>
-              <div class="article-meta">
-                <span class="meta-item">
-                  <el-icon><Calendar /></el-icon>
-                  {{ formatDate(article.createTime) }}
-                </span>
-                <span class="meta-item">
-                  <el-icon><View /></el-icon>
-                  {{ articleStats.viewCount || 0 }} 阅读
-                </span>
-                <span class="meta-item">
-                  <el-icon><Timer /></el-icon>
-                  {{ formatDuration(articleStats.totalViewDuration) }}
-                </span>
-              </div>
+        <div v-if="article" class="article-card-wrapper">
+          <div class="article-header-section">
+            <div class="article-tags">
+              <el-tag v-if="article.isPinned === 1" type="danger" size="small" effect="dark" class="pin-tag">
+                <el-icon><Top /></el-icon>
+                置顶
+              </el-tag>
+              <el-tag size="small" effect="light" class="type-tag">
+                {{ article.articleTypeName }}
+              </el-tag>
             </div>
-          </template>
+            <h1 class="article-title">{{ article.title }}</h1>
+            <div class="article-meta">
+              <span class="meta-item">
+                <el-icon><Calendar /></el-icon>
+                {{ formatDate(article.createTime) }}
+              </span>
+              <span class="meta-item">
+                <el-icon><View /></el-icon>
+                {{ articleStats.viewCount || 0 }} 阅读
+              </span>
+              <span class="meta-item">
+                <el-icon><Timer /></el-icon>
+                {{ formatDuration(articleStats.totalViewDuration) }}
+              </span>
+            </div>
+          </div>
 
           <div class="article-cover" v-if="article.cover">
-            <el-image :src="article.cover" fit="cover" :preview-src-list="[article.cover]">
+            <el-image :src="article.cover" fit="cover" :preview-src-list="[article.cover]" class="cover-image">
               <template #error>
                 <div class="image-fallback">
                   <el-icon><Picture /></el-icon>
@@ -39,38 +42,48 @@
 
           <div class="article-body markdown-body" v-html="renderedContent"></div>
 
-          <template #footer>
-            <div class="article-footer">
-              <div class="action-buttons">
-                <el-button
-                  :type="articleStats.liked ? 'danger' : 'default'"
-                  @click="handleLike"
-                  :icon="articleStats.liked ? StarFilled : Star"
-                >
-                  {{ articleStats.likeCount || 0 }} 点赞
-                </el-button>
-                <el-button @click="goBack" :icon="Back">返回</el-button>
-              </div>
+          <div class="article-footer">
+            <div class="action-buttons">
+              <el-button
+                :type="articleStats.liked ? 'danger' : 'default'"
+                @click="handleLike"
+                :icon="articleStats.liked ? StarFilled : Star"
+                class="like-btn"
+              >
+                {{ articleStats.likeCount || 0 }} 点赞
+              </el-button>
+              <el-button @click="goBack" :icon="Back" class="back-btn">
+                返回
+              </el-button>
             </div>
-          </template>
-        </el-card>
+          </div>
+        </div>
 
-        <el-empty v-if="!loading && !article" description="文章不存在或已删除">
-          <el-button type="primary" @click="goBack">返回首页</el-button>
-        </el-empty>
+        <div v-if="!loading && !article" class="empty-article">
+          <el-empty description="文章不存在或已删除">
+            <el-button type="primary" @click="goBack" class="go-back-btn">
+              <el-icon><ArrowLeft /></el-icon>
+              返回首页
+            </el-button>
+          </el-empty>
+        </div>
       </div>
 
       <div class="article-toc" v-if="toc.length > 0">
         <div class="toc-sticky">
-          <div class="toc-title">📑 目录</div>
+          <div class="toc-title">
+            <el-icon><List /></el-icon>
+            目录
+          </div>
           <nav class="toc-list">
             <a 
               v-for="(item, index) in toc" 
               :key="index"
               :class="['toc-item', { active: activeIndex === index }]"
-              :style="{ marginLeft: (item.level - 1) * 12 + 'px' }"
+              :style="{ marginLeft: (item.level - 1) * 16 + 'px' }"
               @click="navigateTo(item)"
             >
+              <span class="toc-dot"></span>
               {{ item.text }}
             </a>
           </nav>
@@ -84,7 +97,7 @@
 import { ref, onMounted, onUnmounted, computed, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Calendar, View, Timer, Picture, Back, Star, StarFilled } from '@element-plus/icons-vue'
+import { Calendar, View, Timer, Picture, Back, Star, StarFilled, Top, List, ArrowLeft } from '@element-plus/icons-vue'
 import { articleAPI } from '@/api/modules/article'
 import type { Article } from '@/types/article'
 import type { ArticleStats } from '@/types/article'
@@ -374,7 +387,7 @@ const handleBeforeUnload = () => {
 
 <style scoped>
 .article-detail {
-  animation: fadeIn 0.3s ease-in-out;
+  animation: fadeIn 0.5s ease-in-out;
   flex: 1;
 }
 
@@ -403,32 +416,180 @@ const handleBeforeUnload = () => {
   min-width: 0;
 }
 
+.article-card-wrapper {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+.article-header-section {
+  padding: 48px 48px 32px;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.article-tags {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.pin-tag,
+.type-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+.article-title {
+  font-size: 36px;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin: 0 0 24px 0;
+  line-height: 1.3;
+  letter-spacing: -0.5px;
+}
+
+.article-meta {
+  display: flex;
+  gap: 28px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.meta-item .el-icon {
+  font-size: 18px;
+}
+
+.article-cover {
+  width: 100%;
+  max-height: 500px;
+  overflow: hidden;
+  position: relative;
+}
+
+.cover-image {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.5s ease;
+}
+
+.article-cover:hover .cover-image {
+  transform: scale(1.02);
+}
+
+.image-fallback {
+  width: 100%;
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 72px;
+}
+
+.article-body {
+  font-size: 17px;
+  line-height: 1.9;
+  color: #374151;
+  min-height: 300px;
+  padding: 48px;
+}
+
+.article-footer {
+  padding: 32px 48px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.03) 0%, rgba(118, 75, 162, 0.03) 100%);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.like-btn,
+.back-btn {
+  padding: 14px 32px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.like-btn:hover,
+.back-btn:hover {
+  transform: translateY(-2px);
+}
+
+.empty-article {
+  padding: 80px 0;
+}
+
+.go-back-btn {
+  margin-top: 20px;
+  padding: 12px 32px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.go-back-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
 .article-toc {
-  width: 240px;
+  width: 260px;
   flex-shrink: 0;
-  position: fixed;
-  top: 80px;
-  right: 20px;
-  z-index: 100;
+  position: sticky;
+  top: 100px;
+  z-index: 10;
 }
 
 .toc-sticky {
   background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  max-height: 400px;
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  max-height: calc(100vh - 140px);
   overflow-y: auto;
 }
 
 .toc-title {
   font-size: 16px;
   font-weight: 700;
-  color: #303133;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #e4e7ed;
+  color: #1a1a2e;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toc-title .el-icon {
+  color: #667eea;
 }
 
 .toc-list {
@@ -439,24 +600,48 @@ const handleBeforeUnload = () => {
 
 .toc-item {
   font-size: 14px;
-  color: #606266;
-  padding: 6px 8px;
-  border-radius: 4px;
+  color: #6b7280;
+  padding: 10px 12px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   text-decoration: none;
   line-height: 1.5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.toc-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #d1d5db;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
 }
 
 .toc-item:hover {
-  background: #f5f7fa;
-  color: #409eff;
+  background: rgba(102, 126, 234, 0.08);
+  color: #667eea;
+}
+
+.toc-item:hover .toc-dot {
+  background: #667eea;
 }
 
 .toc-item.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+  color: #667eea;
   font-weight: 600;
+}
+
+.toc-item.active .toc-dot {
+  width: 10px;
+  height: 10px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
 }
 
 @media (max-width: 1024px) {
@@ -469,286 +654,241 @@ const handleBeforeUnload = () => {
   }
 }
 
-.article-card {
-  border-radius: 12px;
-  overflow: hidden;
-}
+@media (max-width: 768px) {
+  .article-header-section {
+    padding: 32px 24px 24px;
+  }
 
-.article-header {
-  text-align: center;
-}
+  .article-title {
+    font-size: 28px;
+  }
 
-.header-top {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  margin-bottom: 16px;
-}
+  .article-body {
+    padding: 32px 24px;
+    font-size: 16px;
+  }
 
-.article-title {
-  font-size: 32px;
-  font-weight: 700;
-  color: #303133;
-  margin: 0 0 20px 0;
-  line-height: 1.4;
-}
+  .article-footer {
+    padding: 24px;
+  }
 
-.article-meta {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
+  .action-buttons {
+    flex-direction: column;
+  }
 
-.meta-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  color: #909399;
-}
-
-.meta-item .el-icon {
-  font-size: 16px;
-}
-
-.article-cover {
-  width: 100%;
-  max-height: 400px;
-  overflow: hidden;
-  border-radius: 8px;
-  margin-bottom: 30px;
-}
-
-.article-cover .el-image {
-  width: 100%;
-  height: 100%;
-}
-
-.image-fallback {
-  width: 100%;
-  height: 300px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f5f7fa;
-  color: #c0c4cc;
-  font-size: 64px;
-}
-
-.article-body {
-  font-size: 16px;
-  line-height: 1.8;
-  color: #303133;
-  min-height: 300px;
+  .like-btn,
+  .back-btn {
+    width: 100%;
+  }
 }
 
 :deep(.markdown-body) {
   word-wrap: break-word;
   overflow-wrap: break-word;
-  line-height: 1.8;
+  line-height: 1.9;
 }
 
 :deep(.markdown-body h1) {
-  font-size: 28px;
-  font-weight: 700;
-  margin: 24px 0 16px 0;
-  color: #303133;
-  border-bottom: 2px solid #409eff;
-  padding-bottom: 8px;
+  font-size: 32px;
+  font-weight: 800;
+  margin: 32px 0 20px 0;
+  color: #1a1a2e;
+  border-bottom: 3px solid transparent;
+  border-image: linear-gradient(90deg, #667eea, #764ba2) 1;
+  padding-bottom: 12px;
+  letter-spacing: -0.5px;
 }
 
 :deep(.markdown-body h2) {
-  font-size: 24px;
-  font-weight: 600;
-  margin: 20px 0 14px 0;
-  color: #303133;
-  border-bottom: 1px solid #e4e7ed;
-  padding-bottom: 6px;
+  font-size: 26px;
+  font-weight: 700;
+  margin: 28px 0 18px 0;
+  color: #1a1a2e;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 10px;
+  letter-spacing: -0.3px;
 }
 
 :deep(.markdown-body h3) {
-  font-size: 20px;
-  font-weight: 600;
-  margin: 18px 0 12px 0;
-  color: #303133;
+  font-size: 22px;
+  font-weight: 700;
+  margin: 24px 0 14px 0;
+  color: #374151;
 }
 
 :deep(.markdown-body h4) {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
-  margin: 16px 0 10px 0;
-  color: #303133;
+  margin: 20px 0 12px 0;
+  color: #374151;
 }
 
 :deep(.markdown-body h5) {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
-  margin: 14px 0 8px 0;
-  color: #303133;
+  margin: 18px 0 10px 0;
+  color: #4b5563;
 }
 
 :deep(.markdown-body h6) {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
-  margin: 12px 0 6px 0;
-  color: #303133;
+  margin: 16px 0 8px 0;
+  color: #4b5563;
 }
 
 :deep(.markdown-body p) {
-  margin: 12px 0;
-  color: #303133;
+  margin: 16px 0;
+  color: #374151;
 }
 
 :deep(.markdown-body ul),
 :deep(.markdown-body ol) {
-  padding-left: 24px;
-  margin: 12px 0;
+  padding-left: 28px;
+  margin: 16px 0;
 }
 
 :deep(.markdown-body li) {
-  margin: 6px 0;
-  color: #303133;
+  margin: 8px 0;
+  color: #374151;
 }
 
 :deep(.markdown-body code) {
-  background: #f0f0f0;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 14px;
-  color: #e74c3c;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+  font-size: 15px;
+  color: #667eea;
+  font-weight: 500;
 }
 
 :deep(.markdown-body pre) {
-  background: #282c34;
-  padding: 16px;
-  border-radius: 8px;
+  background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+  padding: 24px;
+  border-radius: 16px;
   overflow-x: auto;
-  margin: 16px 0;
+  margin: 20px 0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 :deep(.markdown-body pre code) {
   background: transparent;
   padding: 0;
-  color: #abb2bf;
-  font-size: 14px;
+  color: #cdd6f4;
+  font-size: 15px;
+  font-weight: 400;
 }
 
 :deep(.markdown-body blockquote) {
-  border-left: 4px solid #409eff;
-  padding: 10px 16px;
-  margin: 16px 0;
-  background: #f5f7fa;
-  border-radius: 0 4px 4px 0;
-  color: #606266;
+  border-left: 4px solid transparent;
+  border-image: linear-gradient(180deg, #667eea, #764ba2) 1;
+  padding: 16px 24px;
+  margin: 20px 0;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+  border-radius: 0 12px 12px 0;
+  color: #4b5563;
+  font-style: italic;
 }
 
 :deep(.markdown-body strong) {
   font-weight: 700;
-  color: #303133;
+  color: #1a1a2e;
 }
 
 :deep(.markdown-body em) {
   font-style: italic;
-  color: #606266;
+  color: #4b5563;
 }
 
 :deep(.markdown-body a) {
-  color: #409eff;
+  color: #667eea;
   text-decoration: none;
-  transition: color 0.2s;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+:deep(.markdown-body a::after) {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  transition: width 0.3s ease;
 }
 
 :deep(.markdown-body a:hover) {
-  color: #66b1ff;
-  text-decoration: underline;
+  color: #764ba2;
+}
+
+:deep(.markdown-body a:hover::after) {
+  width: 100%;
 }
 
 :deep(.markdown-body img) {
   max-width: 100%;
   height: auto;
-  border-radius: 8px;
-  margin: 16px 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
+  border-radius: 16px;
+  margin: 24px 0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
 
 :deep(.markdown-body img:hover) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
 }
 
 :deep(.markdown-body table) {
   width: 100%;
-  border-collapse: collapse;
-  margin: 16px 0;
-  border-radius: 8px;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 24px 0;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 :deep(.markdown-body th) {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #fff;
-  font-weight: 600;
-  padding: 12px 16px;
+  font-weight: 700;
+  padding: 16px;
   text-align: left;
-  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 :deep(.markdown-body td) {
-  padding: 12px 16px;
-  border: 1px solid #e4e7ed;
-  color: #303133;
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+  color: #374151;
+}
+
+:deep(.markdown-body tr:last-child td) {
+  border-bottom: none;
 }
 
 :deep(.markdown-body tr:nth-child(even) td) {
-  background: #f5f7fa;
+  background: rgba(102, 126, 234, 0.03);
 }
 
 :deep(.markdown-body tr:hover td) {
-  background: #ecf5ff;
+  background: rgba(102, 126, 234, 0.08);
 }
 
 :deep(.markdown-body hr) {
   border: none;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, #e4e7ed, transparent);
-  margin: 24px 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.5), transparent);
+  margin: 40px 0;
 }
 
 :deep(.markdown-body input[type="checkbox"]) {
-  margin-right: 8px;
-  accent-color: #409eff;
-}
-
-:deep(.el-card__header) {
-  padding: 30px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-:deep(.el-card__body) {
-  padding: 30px;
-}
-
-:deep(.el-card__footer) {
-  padding: 20px 30px;
-  border-top: 1px solid #f0f0f0;
-}
-
-.article-footer {
-  display: flex;
-  justify-content: center;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 12px;
-}
-
-.action-buttons .el-button {
-  padding: 12px 24px;
-  font-size: 14px;
+  margin-right: 10px;
+  accent-color: #667eea;
+  width: 18px;
+  height: 18px;
 }
 </style>

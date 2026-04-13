@@ -1,16 +1,19 @@
 <template>
   <el-container class="admin-layout">
-    <el-aside width="200px" class="aside">
+    <el-aside width="260px" class="aside">
       <div class="logo">
+        <div class="logo-icon">
+          <el-icon><Setting /></el-icon>
+        </div>
         <h2>管理后台</h2>
       </div>
       <el-menu
         :default-active="activeMenu"
         class="menu"
         :router="true"
-        background-color="#304156"
-        text-color="#bfcbd9"
-        active-text-color="#409eff"
+        background-color="transparent"
+        text-color="#94a3b8"
+        active-text-color="#667eea"
       >
         <el-menu-item index="/admin/dashboard">
           <el-icon><DataAnalysis /></el-icon>
@@ -27,20 +30,28 @@
       </el-menu>
     </el-aside>
 
-    <el-container>
+    <el-container class="main-container">
       <el-header class="header">
         <div class="header-left">
-          <h3>{{ pageTitle }}</h3>
+          <div class="page-title-wrapper">
+            <el-icon class="title-icon"><ArrowRight /></el-icon>
+            <h3>{{ pageTitle }}</h3>
+          </div>
         </div>
         <div class="header-right">
-          <el-dropdown @command="handleCommand">
-            <span class="user-info">
-              <el-icon><User /></el-icon>
-              {{ authStore.userInfo?.username || '管理员' }}
-              <el-icon class="el-icon--right"><ArrowDown /></el-icon>
-            </span>
+          <el-dropdown @command="handleCommand" class="user-dropdown">
+            <div class="user-info">
+              <div class="user-avatar">
+                <el-icon><User /></el-icon>
+              </div>
+              <div class="user-details">
+                <span class="user-name">{{ authStore.userInfo?.username || '管理员' }}</span>
+                <span class="user-role">超级管理员</span>
+              </div>
+              <el-icon class="dropdown-icon"><ArrowDown /></el-icon>
+            </div>
             <template #dropdown>
-              <el-dropdown-menu>
+              <el-dropdown-menu class="user-dropdown-menu">
                 <el-dropdown-item command="home">
                   <el-icon><HomeFilled /></el-icon>
                   前台首页
@@ -72,8 +83,10 @@ import {
   Collection,
   User,
   ArrowDown,
+  ArrowRight,
   HomeFilled,
   SwitchButton,
+  Setting,
 } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/modules/auth'
 
@@ -115,65 +128,157 @@ const handleCommand = async (command: string) => {
 <style scoped>
 .admin-layout {
   min-height: 100vh;
+  background: #f1f5f9;
 }
 
 .aside {
-  background-color: #304156;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.aside::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.1), transparent);
 }
 
 .logo {
-  height: 60px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.logo-icon {
+  width: 42px;
+  height: 42px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #2b3a4a;
-  border-bottom: 1px solid #3d4a5c;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.logo-icon .el-icon {
+  font-size: 22px;
+  color: #fff;
 }
 
 .logo h2 {
   margin: 0;
-  color: #fff;
-  font-size: 18px;
-  font-weight: 600;
+  color: #f8fafc;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
 }
 
 .menu {
   border: none;
-  background-color: #304156;
+  background: transparent;
+  padding: 20px 16px;
+  flex: 1;
 }
 
 .menu .el-menu-item {
-  height: 50px;
-  line-height: 50px;
-  margin: 0;
-  border-left: 3px solid transparent;
+  height: 52px;
+  line-height: 52px;
+  margin: 4px 0;
+  border-radius: 12px;
+  color: #94a3b8;
+  font-weight: 500;
+  font-size: 15px;
+  padding: 0 16px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.menu .el-menu-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%) scaleY(0);
+  width: 3px;
+  height: 24px;
+  background: linear-gradient(180deg, #667eea, #764ba2);
+  border-radius: 0 2px 2px 0;
+  transition: all 0.3s ease;
 }
 
 .menu .el-menu-item:hover {
-  background-color: #263445 !important;
-  border-left-color: #409eff;
+  background: rgba(102, 126, 234, 0.1) !important;
+  color: #e2e8f0;
+}
+
+.menu .el-menu-item:hover::before {
+  transform: translateY(-50%) scaleY(1);
 }
 
 .menu .el-menu-item.is-active {
-  background-color: #263445 !important;
-  border-left-color: #409eff;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%) !important;
+  color: #667eea;
+}
+
+.menu .el-menu-item.is-active::before {
+  transform: translateY(-50%) scaleY(1);
+}
+
+.menu .el-menu-item .el-icon {
+  margin-right: 10px;
+  font-size: 18px;
+}
+
+.main-container {
+  display: flex;
+  flex-direction: column;
 }
 
 .header {
   background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
+  padding: 0 32px;
+  height: 72px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.page-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.title-icon {
+  color: #667eea;
+  font-size: 20px;
 }
 
 .header-left h3 {
   margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: -0.3px;
 }
 
 .header-right {
@@ -181,33 +286,105 @@ const handleCommand = async (command: string) => {
   align-items: center;
 }
 
+.user-dropdown {
+  cursor: pointer;
+}
+
 .user-info {
   display: flex;
   align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 4px;
-  transition: background-color 0.3s;
+  gap: 12px;
+  padding: 8px 16px;
+  border-radius: 14px;
+  transition: all 0.3s ease;
 }
 
 .user-info:hover {
-  background-color: #f5f7fa;
+  background: #f8fafc;
+}
+
+.user-avatar {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+}
+
+.user-avatar .el-icon {
+  font-size: 22px;
+  color: #fff;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.user-role {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.dropdown-icon {
+  color: #94a3b8;
+  font-size: 16px;
+  transition: transform 0.3s ease;
+}
+
+.user-info:hover .dropdown-icon {
+  transform: translateY(2px);
 }
 
 .main-content {
-  background-color: #f0f2f5;
-  padding: 20px;
+  background: #f1f5f9;
+  padding: 24px 32px;
   overflow-y: auto;
+  flex: 1;
+}
+
+.user-dropdown-menu {
+  padding: 8px;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e2e8f0;
 }
 
 :deep(.el-dropdown-menu__item) {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin: 2px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #475569;
+  transition: all 0.2s ease;
+}
+
+:deep(.el-dropdown-menu__item:hover) {
+  background: #f1f5f9;
+  color: #667eea;
+}
+
+:deep(.el-dropdown-menu__item .el-icon) {
+  font-size: 16px;
 }
 
 :deep(.el-dropdown-menu__item--divided) {
-  margin-top: 4px;
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
 }
 </style>

@@ -5,13 +5,12 @@ import { AppModule } from './app.module';
 import { SeedService } from './modules/user/seed.service';
 import { LoggingInterceptor } from './common/logging.interceptor';
 import { TransformInterceptor } from './common/transform.interceptor';
-import { VisitorFingerprintInterceptor } from './common/visitor-fingerprint.interceptor';
+import { VisitorFingerprintInterceptor } from './modules/visitor/visitor-fingerprint.interceptor';
 import { HttpExceptionFilter } from './common/http-exception.filter';
 import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
   app.setGlobalPrefix('api');
   app.use(cookieParser());
   app.useGlobalPipes(
@@ -30,7 +29,7 @@ async function bootstrap() {
     app.get(VisitorFingerprintInterceptor),
   );
   app.useGlobalFilters(new HttpExceptionFilter());
-  
+
   const config = new DocumentBuilder()
     .setTitle('Damn Blog API')
     .setDescription('博客系统 API 文档')
@@ -39,10 +38,10 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api-docs', app, document);
-  
+
   const seedService = app.get(SeedService);
   await seedService.seedAdmin();
-  
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
