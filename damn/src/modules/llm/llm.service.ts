@@ -333,6 +333,12 @@ export class LLMService {
     return parsed.choices?.[0]?.delta?.content || null;
   }
 
+  private joinURL(base: string, path: string): string {
+    const baseSlash = base.endsWith('/') ? base : base + '/';
+    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+    return new URL(cleanPath, baseSlash).toString();
+  }
+
   private async callLLMStream(
     messages: ChatMessage[],
     conversationId: number,
@@ -348,8 +354,8 @@ export class LLMService {
 
     try {
       const endpoint = provider === 'anthropic'
-        ? `${baseURL}/v1/messages`
-        : `${baseURL}/chat/completions`;
+        ? this.joinURL(baseURL, 'v1/messages')
+        : this.joinURL(baseURL, 'chat/completions');
 
       const body = this.buildRequestBody(provider, model, temperature, maxTokens, messages);
 

@@ -43,6 +43,7 @@ declare module 'vue' {
     MarkdownEditor: typeof import('./components/MarkdownEditor.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    ThinkBlock: typeof import('./components/ThinkBlock.vue')['default']
     VisitorCharts: typeof import('./components/VisitorCharts.vue')['default']
     VisitorMap: typeof import('./components/VisitorMap.vue')['default']
   }

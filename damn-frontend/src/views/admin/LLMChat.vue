@@ -72,7 +72,17 @@
               <el-icon v-else><MagicStick /></el-icon>
             </div>
             <div class="message-content">
-              <div v-html="renderMarkdown(msg.content)" class="markdown-body"></div>
+              <template v-for="part in parseThinkBlocks(msg.content)">
+                <ThinkBlock
+                  v-if="part.isThink"
+                  :content="part.content"
+                />
+                <div
+                  v-else
+                  v-html="renderMarkdown(part.content)"
+                  class="markdown-body"
+                ></div>
+              </template>
 
               <div v-if="billsByMessage[msg.id]" class="bills-container">
                 <BillCard
@@ -85,17 +95,7 @@
             </div>
           </div>
 
-          <div v-if="streaming" class="message-item role-assistant">
-            <div class="message-avatar">
-              <el-icon><MagicStick /></el-icon>
-            </div>
-            <div class="message-content">
-              <div class="streaming-content">
-                {{ currentStreamingContent }}
-                <span class="cursor blink">▋</span>
-              </div>
-            </div>
-          </div>
+
 
           <el-empty
             v-if="!streaming && llmStore.messages.length === 0 && llmStore.currentConversation"
@@ -212,6 +212,62 @@ import type { Message, StreamChunk, Bill } from '@/types/llm';
 import { marked } from 'marked';
 import { ElMessage } from 'element-plus';
 import BillCard from '@/components/BillCard.vue';
+import ThinkBlock from '@/components/ThinkBlock.vue';
+
+interface ContentPart {
+  content: string;
+  isThink: boolean;
+}
+
+const parseThinkBlocks = (content: string): ContentPart[] => {
+  if (!content) return [{ content: '', isThink: false }];
+
+  const result: ContentPart[] = [];
+  let remaining = content;
+  let thinkStartIndex = remaining.indexOf('<think>');
+
+  if (thinkStartIndex === -1) {
+    const trimmed = content.trim();
+    return trimmed ? [{ content: trimmed, isThink: false }] : [];
+  }
+
+  while (remaining.length > 0) {
+    thinkStartIndex = remaining.indexOf('<think>');
+    if (thinkStartIndex === -1) {
+      const trimmed = remaining.trim();
+      if (trimmed) {
+        result.push({ content: trimmed, isThink: false });
+      }
+      break;
+    }
+
+    if (thinkStartIndex > 0) {
+      const before = remaining.slice(0, thinkStartIndex).trim();
+      if (before) {
+        result.push({ content: before, isThink: false });
+      }
+    }
+
+    remaining = remaining.slice(thinkStartIndex + '<think>'.length);
+
+    const thinkEndIndex = remaining.indexOf('</think>');
+    if (thinkEndIndex === -1) {
+      const thinkContent = remaining.trim();
+      if (thinkContent) {
+        result.push({ content: thinkContent, isThink: true });
+      }
+      break;
+    }
+
+    const thinkContent = remaining.slice(0, thinkEndIndex).trim();
+    if (thinkContent) {
+      result.push({ content: thinkContent, isThink: true });
+    }
+    remaining = remaining.slice(thinkEndIndex + '</think>'.length);
+  }
+
+  return result.length > 0 ? result : [{ content, isThink: false }];
+};
 
 const llmStore = useLLMStore();
 const messagesContainer = ref<HTMLElement | null>(null);
@@ -446,7 +502,7 @@ onMounted(() => {
 <style scoped>
 .llm-chat-page {
   height: calc(100vh - 120px);
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--bg-elevated);
   border-radius: 12px;
   overflow: hidden;
 }
@@ -458,15 +514,15 @@ onMounted(() => {
 
 .conversation-sidebar {
   width: 280px;
-  border-right: 1px solid #e4e7ed;
+  border-right: 1px solid var(--line-soft);
   display: flex;
   flex-direction: column;
-  background: #f5f7fa;
+  background: var(--bg-soft);
 }
 
 .sidebar-header {
   padding: 16px;
-  border-bottom: 1px solid #e4e7ed;
+  border-bottom: 1px solid var(--line-soft);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -476,7 +532,7 @@ onMounted(() => {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: #303133;
+  color: var(--text-primary);
 }
 
 .conversation-list {
@@ -491,19 +547,19 @@ onMounted(() => {
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
-  background: #fff;
+  background: var(--bg-elevated);
   border: 1px solid transparent;
   position: relative;
 }
 
 .conversation-item:hover {
-  border-color: #409eff;
-  background: #ecf5ff;
+  border-color: var(--color-brand);
+  background: color-mix(in srgb, var(--color-brand) 10%, transparent);
 }
 
 .conversation-item.active {
-  border-color: #409eff;
-  background: #ecf5ff;
+  border-color: var(--color-brand);
+  background: color-mix(in srgb, var(--color-brand) 10%, transparent);
 }
 
 .conversation-item .conv-info {
@@ -517,7 +573,7 @@ onMounted(() => {
   flex: 1;
   font-size: 14px;
   font-weight: 500;
-  color: #303133;
+  color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -525,7 +581,7 @@ onMounted(() => {
 
 .conversation-item .conv-date {
   font-size: 12px;
-  color: #909399;
+  color: var(--text-muted);
   padding-right: 30px;
 }
 
@@ -545,12 +601,12 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: var(--bg-base);
 }
 
 .chat-header {
   padding: 12px 20px;
-  border-bottom: 1px solid #e4e7ed;
+  border-bottom: 1px solid var(--line-soft);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -565,7 +621,7 @@ onMounted(() => {
 .header-info .conv-title {
   font-size: 16px;
   font-weight: 600;
-  color: #303133;
+  color: var(--text-primary);
 }
 
 .messages-container {
@@ -647,8 +703,8 @@ onMounted(() => {
 }
 
 .message-item.role-assistant .markdown-body {
-  background: #f5f7fa;
-  color: #303133;
+  background: var(--bg-soft);
+  color: var(--text-primary);
 }
 
 .bills-container {
@@ -661,16 +717,16 @@ onMounted(() => {
 .streaming-content {
   padding: 12px 16px;
   border-radius: 12px;
-  background: #f5f7fa;
+  background: var(--bg-soft);
   line-height: 1.6;
-  color: #303133;
+  color: var(--text-primary);
   display: inline-block;
 }
 
 .cursor {
   display: inline-block;
   margin-left: 2px;
-  color: #666;
+  color: var(--text-muted);
 }
 
 .blink {
@@ -684,7 +740,8 @@ onMounted(() => {
 
 .input-area {
   padding: 16px 20px;
-  border-top: 1px solid #e4e7ed;
+  border-top: 1px solid var(--line-soft);
+  background: var(--bg-elevated);
 }
 
 .upload-area {
@@ -730,7 +787,7 @@ onMounted(() => {
 
 .input-actions .hint {
   font-size: 12px;
-  color: #909399;
+  color: var(--text-muted);
 }
 
 .dialog-content {
@@ -744,13 +801,13 @@ onMounted(() => {
 .type-title {
   font-size: 16px;
   font-weight: 600;
-  color: #303133;
+  color: var(--text-primary);
   margin-bottom: 4px;
 }
 
 .type-desc {
   font-size: 13px;
-  color: #909399;
+  color: var(--text-muted);
 }
 
 :deep(.markdown-body h1) {
@@ -773,7 +830,7 @@ onMounted(() => {
 }
 
 :deep(.markdown-body code) {
-  background: rgba(0, 0, 0, 0, 0.1);
+  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
   padding: 2px 6px;
   border-radius: 4px;
   font-family: 'Courier New', monospace;
@@ -781,7 +838,8 @@ onMounted(() => {
 }
 
 :deep(.markdown-body pre) {
-  background: #282c34;
+  background: var(--bg-elevated);
+  border: 1px solid var(--line-soft);
   padding: 12px;
   border-radius: 8px;
   overflow-x: auto;
@@ -794,14 +852,16 @@ onMounted(() => {
   padding: 0;
 }
 
-:deep(.markdown-body ul) {
+:deep(.markdown-body ul),
+:deep(.markdown-body ol) {
   padding-left: 20px;
+  margin: 8px 0;
 }
 
 :deep(.markdown-body blockquote) {
-  border-left: 4px solid #ddd;
+  border-left: 4px solid var(--line-strong);
   padding-left: 12px;
-  color: #666;
+  color: var(--text-secondary);
   margin: 12px 0;
 }
 

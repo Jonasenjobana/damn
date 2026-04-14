@@ -12,8 +12,8 @@
         class="menu"
         :router="true"
         background-color="transparent"
-        text-color="#94a3b8"
-        active-text-color="#667eea"
+        :text-color="isDark ? '#94a3b8' : 'var(--text-secondary)'"
+        active-text-color="var(--color-brand)"
       >
         <el-menu-item index="/admin/dashboard">
           <el-icon><DataAnalysis /></el-icon>
@@ -43,6 +43,14 @@
           </div>
         </div>
         <div class="header-right">
+          <el-button
+            :type="isDark ? 'default' : 'primary'"
+            plain
+            @click="toggleTheme"
+            class="theme-btn"
+            :icon="isDark ? Sunny : Moon"
+            circle
+          />
           <el-dropdown @command="handleCommand" class="user-dropdown">
             <div class="user-info">
               <div class="user-avatar">
@@ -92,14 +100,20 @@ import {
   SwitchButton,
   MagicStick,
   Setting,
+  Sunny,
+  Moon,
 } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/modules/auth'
+import { useThemeStore } from '@/stores/modules/theme'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+const themeStore = useThemeStore()
 
 const activeMenu = computed(() => route.path)
+const isDark = computed(() => themeStore.isDark)
+const toggleTheme = () => themeStore.toggleTheme()
 
 const pageTitle = computed(() => {
   const titles: Record<string, string> = {
@@ -138,12 +152,12 @@ const handleCommand = async (command: string) => {
 }
 
 .aside {
-  background: #111827;
+  background: var(--bg-soft);
   box-shadow: 2px 0 16px rgba(15, 23, 42, 0.16);
   display: flex;
   flex-direction: column;
   position: relative;
-  border-right: 1px solid rgba(148, 163, 184, 0.2);
+  border-right: 1px solid var(--line-soft);
 }
 
 .logo {
@@ -152,8 +166,8 @@ const handleCommand = async (command: string) => {
   align-items: center;
   padding: 0 24px;
   gap: 14px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.22);
-  background: rgba(15, 23, 42, 0.28);
+  border-bottom: 1px solid var(--line-soft);
+  background: var(--bg-elevated);
 }
 
 .logo-icon {
@@ -174,7 +188,7 @@ const handleCommand = async (command: string) => {
 
 .logo h2 {
   margin: 0;
-  color: #f8fafc;
+  color: var(--text-primary);
   font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.3px;
@@ -215,8 +229,8 @@ const handleCommand = async (command: string) => {
 }
 
 .menu .el-menu-item:hover {
-  background: rgba(14, 165, 164, 0.1) !important;
-  color: #f1f5f9;
+  background: color-mix(in srgb, var(--color-brand) 10%, transparent) !important;
+  color: var(--text-primary);
 }
 
 .menu .el-menu-item:hover::before {
@@ -224,8 +238,8 @@ const handleCommand = async (command: string) => {
 }
 
 .menu .el-menu-item.is-active {
-  background: rgba(14, 165, 164, 0.2) !important;
-  color: #99f6e4;
+  background: color-mix(in srgb, var(--color-brand) 18%, transparent) !important;
+  color: var(--color-brand);
 }
 
 .menu .el-menu-item.is-active::before {
@@ -243,14 +257,14 @@ const handleCommand = async (command: string) => {
 }
 
 .header {
-  background: #fff;
+  background: var(--bg-elevated);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 32px;
   height: 72px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--line-soft);
 }
 
 .header-left {
@@ -273,13 +287,27 @@ const handleCommand = async (command: string) => {
   margin: 0;
   font-size: 20px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
   letter-spacing: -0.3px;
 }
 
 .header-right {
   display: flex;
   align-items: center;
+  gap: 12px;
+}
+
+.theme-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  transition: all 0.3s var(--ease-smooth);
+}
+
+.theme-btn:hover {
+  transform: rotate(15deg) scale(1.1);
 }
 
 .user-dropdown {
@@ -296,13 +324,13 @@ const handleCommand = async (command: string) => {
 }
 
 .user-info:hover {
-  background: #f8fafc;
+  background: var(--bg-soft);
 }
 
 .user-avatar {
   width: 44px;
   height: 44px;
-  background: #0f172a;
+  background: var(--bg-soft);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -312,7 +340,7 @@ const handleCommand = async (command: string) => {
 
 .user-avatar .el-icon {
   font-size: 22px;
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .user-details {
@@ -324,7 +352,7 @@ const handleCommand = async (command: string) => {
 .user-name {
   font-size: 15px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-primary);
 }
 
 .user-role {
@@ -365,13 +393,13 @@ const handleCommand = async (command: string) => {
   margin: 2px 0;
   font-size: 14px;
   font-weight: 500;
-  color: #475569;
+  color: var(--text-secondary);
   transition: all 0.2s ease;
 }
 
 :deep(.el-dropdown-menu__item:hover) {
-  background: #f1f5f9;
-  color: var(--brand-strong);
+  background: var(--bg-soft);
+  color: var(--color-brand-strong);
 }
 
 :deep(.el-dropdown-menu__item .el-icon) {
@@ -381,6 +409,6 @@ const handleCommand = async (command: string) => {
 :deep(.el-dropdown-menu__item--divided) {
   margin-top: 6px;
   padding-top: 12px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--line-soft);
 }
 </style>

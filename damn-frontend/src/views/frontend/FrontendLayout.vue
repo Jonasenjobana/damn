@@ -17,6 +17,14 @@
             首页
           </el-menu-item>
         </el-menu>
+        <el-button
+          :type="isDark ? 'default' : 'primary'"
+          plain
+          @click="toggleTheme"
+          class="theme-btn"
+          :icon="isDark ? Sunny : Moon"
+          circle
+        />
         <el-button type="primary" plain @click="goToAdmin" class="admin-btn">
           <el-icon><Setting /></el-icon>
           管理后台
@@ -43,16 +51,20 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Setting, Document, HomeFilled } from '@element-plus/icons-vue'
+import { Setting, Document, HomeFilled, Sunny, Moon } from '@element-plus/icons-vue'
+import { useThemeStore } from '@/stores/modules/theme'
 
 const route = useRoute()
 const router = useRouter()
 const isHeaderHidden = ref(false)
 let lastY = 0
+const themeStore = useThemeStore()
 
 const activeIndex = computed(() => route.path)
+const isDark = computed(() => themeStore.isDark)
 
 const goToAdmin = () => router.push('/admin/login')
+const toggleTheme = () => themeStore.toggleTheme()
 
 const onScroll = () => {
   const currentY = window.scrollY || 0
@@ -125,6 +137,19 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 
 .admin-btn {
   border-radius: 11px;
+}
+
+.theme-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  transition: all 0.3s var(--ease-smooth);
+}
+
+.theme-btn:hover {
+  transform: rotate(15deg) scale(1.1);
 }
 
 .main-content {
