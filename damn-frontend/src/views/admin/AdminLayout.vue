@@ -27,6 +27,10 @@
           <el-icon><Collection /></el-icon>
           <span>文章类型</span>
         </el-menu-item>
+        <el-menu-item index="/admin/llm-chat">
+          <el-icon><MagicStick /></el-icon>
+          <span>AI 聊天</span>
+        </el-menu-item>
       </el-menu>
     </el-aside>
 
@@ -86,6 +90,7 @@ import {
   ArrowRight,
   HomeFilled,
   SwitchButton,
+  MagicStick,
   Setting,
 } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/modules/auth'
@@ -101,6 +106,7 @@ const pageTitle = computed(() => {
     '/admin/dashboard': '仪表盘',
     '/admin/articles': '文章管理',
     '/admin/article-types': '文章类型管理',
+    '/admin/llm-chat': 'AI 聊天',
   }
   return titles[route.path] || '管理后台'
 })

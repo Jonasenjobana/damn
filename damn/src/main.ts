@@ -5,13 +5,18 @@ import { AppModule } from './app.module';
 import { SeedService } from './modules/user/seed.service';
 import { LoggingInterceptor } from './common/logging.interceptor';
 import { TransformInterceptor } from './common/transform.interceptor';
-import { VisitorFingerprintInterceptor } from './modules/visitor/visitor-fingerprint.interceptor';
 import { HttpExceptionFilter } from './common/http-exception.filter';
 import cookieParser from 'cookie-parser';
+import { VisitorFingerprintInterceptor } from './modules/visitor/visitor-fingerprint.interceptor';
+import cors from 'cors';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api');
+  app.use(cors({
+    origin: true,
+    credentials: true,
+  }));
   app.use(cookieParser());
   app.useGlobalPipes(
     new ValidationPipe({
