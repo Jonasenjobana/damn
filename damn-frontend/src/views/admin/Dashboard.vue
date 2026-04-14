@@ -7,6 +7,7 @@ import { useVisitorStore } from '@/stores/modules/visitor'
 import VisitorMap from '@/components/VisitorMap.vue'
 import VisitorCharts from '@/components/VisitorCharts.vue'
 import { ElRow, ElCol, ElCard, ElStatistic, ElButton } from 'element-plus'
+import { Document, View, Star, Timer, Position, DataAnalysis, Warning, Delete } from '@element-plus/icons-vue'
 
 const articleStore = useArticleStore()
 const statsStore = useStatsStore()
@@ -50,6 +51,7 @@ function initBarChart() {
       textStyle: {
         fontSize: 16,
         fontWeight: 'bold',
+        color: '#1e293b'
       },
     },
     tooltip: {
@@ -81,10 +83,8 @@ function initBarChart() {
         type: 'bar',
         data: sortedArticles.map((a) => a.viewCount),
         itemStyle: {
-          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: '#83bff6' },
-            { offset: 1, color: '#188df0' },
-          ]),
+          color: '#0f766e',
+          borderRadius: [8, 8, 0, 0]
         },
         label: {
           show: true,
@@ -115,6 +115,7 @@ function initPieChart() {
       textStyle: {
         fontSize: 16,
         fontWeight: 'bold',
+        color: '#1e293b'
       },
     },
     tooltip: {
@@ -133,9 +134,9 @@ function initPieChart() {
         radius: ['40%', '70%'],
         avoidLabelOverlap: false,
         itemStyle: {
-          borderRadius: 10,
+          borderRadius: 12,
           borderColor: '#fff',
-          borderWidth: 2,
+          borderWidth: 3,
         },
         label: {
           show: true,
@@ -184,93 +185,101 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="dashboard-container">
-    <ElRow :gutter="20" class="stats-row">
+    <ElRow :gutter="24" class="stats-row">
       <ElCol :xs="24" :sm="12" :md="6">
-        <ElCard shadow="hover" class="stat-card">
+        <ElCard shadow="hover" class="stat-card card-articles">
+          <template #header>
+            <div class="stat-icon-wrapper">
+              <el-icon class="stat-icon"><Document /></el-icon>
+            </div>
+          </template>
           <ElStatistic
             title="总文章数"
             :value="totalArticles"
-            :value-style="{ color: '#409EFF' }"
-          >
-            <template #prefix>
-              <span style="margin-right: 8px">📝</span>
-            </template>
-          </ElStatistic>
+            :value-style="{ color: '#1e293b' }"
+          />
         </ElCard>
       </ElCol>
       <ElCol :xs="24" :sm="12" :md="6">
-        <ElCard shadow="hover" class="stat-card">
+        <ElCard shadow="hover" class="stat-card card-views">
+          <template #header>
+            <div class="stat-icon-wrapper">
+              <el-icon class="stat-icon"><View /></el-icon>
+            </div>
+          </template>
           <ElStatistic
             title="总浏览量"
             :value="totalViews"
-            :value-style="{ color: '#67C23A' }"
-          >
-            <template #prefix>
-              <span style="margin-right: 8px">👁️</span>
-            </template>
-          </ElStatistic>
+            :value-style="{ color: '#1e293b' }"
+          />
         </ElCard>
       </ElCol>
       <ElCol :xs="24" :sm="12" :md="6">
-        <ElCard shadow="hover" class="stat-card">
+        <ElCard shadow="hover" class="stat-card card-likes">
+          <template #header>
+            <div class="stat-icon-wrapper">
+              <el-icon class="stat-icon"><Star /></el-icon>
+            </div>
+          </template>
           <ElStatistic
             title="总点赞数"
             :value="totalLikes"
-            :value-style="{ color: '#F56C6C' }"
-          >
-            <template #prefix>
-              <span style="margin-right: 8px">❤️</span>
-            </template>
-          </ElStatistic>
+            :value-style="{ color: '#1e293b' }"
+          />
         </ElCard>
       </ElCol>
       <ElCol :xs="24" :sm="12" :md="6">
-        <ElCard shadow="hover" class="stat-card">
+        <ElCard shadow="hover" class="stat-card card-duration">
+          <template #header>
+            <div class="stat-icon-wrapper">
+              <el-icon class="stat-icon"><Timer /></el-icon>
+            </div>
+          </template>
           <ElStatistic
             title="总浏览时长"
             :value="formattedDuration"
-            :value-style="{ color: '#E6A23C' }"
-          >
-            <template #prefix>
-              <span style="margin-right: 8px">⏱️</span>
-            </template>
-          </ElStatistic>
+            :value-style="{ color: '#1e293b' }"
+          />
         </ElCard>
       </ElCol>
       <ElCol :xs="24" :sm="12" :md="6">
-        <ElCard shadow="hover" class="stat-card">
+        <ElCard shadow="hover" class="stat-card card-visitors">
+          <template #header>
+            <div class="stat-icon-wrapper">
+              <el-icon class="stat-icon"><Position /></el-icon>
+            </div>
+          </template>
           <ElStatistic
             title="总访客数"
             :value="totalVisitors"
-            :value-style="{ color: '#9C27B0' }"
-          >
-            <template #prefix>
-              <span style="margin-right: 8px">🌍</span>
-            </template>
-          </ElStatistic>
+            :value-style="{ color: '#1e293b' }"
+          />
         </ElCard>
       </ElCol>
     </ElRow>
 
-    <ElRow :gutter="20" class="chart-row">
+    <ElRow :gutter="24" class="chart-row">
       <ElCol :xs="24" :lg="16">
-        <ElCard shadow="hover">
+        <ElCard shadow="hover" class="chart-card">
           <div ref="barChartRef" class="chart-container"></div>
         </ElCard>
       </ElCol>
       <ElCol :xs="24" :lg="8">
-        <ElCard shadow="hover">
+        <ElCard shadow="hover" class="chart-card">
           <div ref="pieChartRef" class="chart-container"></div>
         </ElCard>
       </ElCol>
     </ElRow>
 
-    <ElRow :gutter="20" class="stats-row">
+    <ElRow :gutter="24" class="stats-row">
       <ElCol :span="24">
-        <ElCard shadow="hover">
+        <ElCard shadow="hover" class="section-card">
           <template #header>
             <div class="card-header">
-              <span>🌍 访客地理分布</span>
+              <div class="header-title">
+                <el-icon class="header-icon"><Position /></el-icon>
+                <span>访客地理分布</span>
+              </div>
             </div>
           </template>
           <VisitorMap :stats="visitorStore.stats" />
@@ -278,12 +287,15 @@ onBeforeUnmount(() => {
       </ElCol>
     </ElRow>
 
-    <ElRow :gutter="20" class="stats-row" v-if="visitorStore.stats">
+    <ElRow :gutter="24" class="stats-row" v-if="visitorStore.stats">
       <ElCol :span="24">
-        <ElCard shadow="hover">
+        <ElCard shadow="hover" class="section-card">
           <template #header>
             <div class="card-header">
-              <span>📊 访客统计图表</span>
+              <div class="header-title">
+                <el-icon class="header-icon"><DataAnalysis /></el-icon>
+                <span>访客统计图表</span>
+              </div>
             </div>
           </template>
           <VisitorCharts :stats="visitorStore.stats" />
@@ -291,13 +303,17 @@ onBeforeUnmount(() => {
       </ElCol>
     </ElRow>
 
-    <ElRow :gutter="20" class="stats-row" v-if="statsStore.errorStats">
+    <ElRow :gutter="24" class="stats-row" v-if="statsStore.errorStats">
       <ElCol :span="24">
-        <ElCard shadow="hover">
+        <ElCard shadow="hover" class="section-card">
           <template #header>
             <div class="card-header">
-              <span>错误统计</span>
-              <ElButton type="danger" size="small" @click="statsStore.clearErrorStats">
+              <div class="header-title">
+                <el-icon class="header-icon warning"><Warning /></el-icon>
+                <span>错误统计</span>
+              </div>
+              <ElButton type="danger" size="small" @click="statsStore.clearErrorStats" class="clear-btn">
+                <el-icon><Delete /></el-icon>
                 清空统计
               </ElButton>
             </div>
@@ -326,24 +342,111 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .dashboard-container {
-  padding: 20px;
+  padding: 0;
 }
 
 .stats-row {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .chart-row {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .stat-card {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  border-radius: 16px;
+  border: 1px solid var(--line-soft);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: none;
 }
 
-.chart-container {
-  width: 100%;
-  height: 400px;
+.stat-card:hover {
+  transform: translateY(-4px);
+}
+
+.stat-card :deep(.el-card__header) {
+  padding: 20px 24px;
+  border-bottom: none;
+  background: transparent;
+}
+
+.stat-card :deep(.el-card__body) {
+  padding: 0 24px 24px;
+}
+
+.stat-icon-wrapper {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+}
+
+.stat-icon {
+  font-size: 26px;
+}
+
+.card-articles .stat-icon-wrapper {
+  background: #0f766e;
+}
+
+.card-articles .stat-icon {
+  color: #fff;
+}
+
+.card-views .stat-icon-wrapper {
+  background: #0891b2;
+}
+
+.card-views .stat-icon {
+  color: #fff;
+}
+
+.card-likes .stat-icon-wrapper {
+  background: #ef4444;
+}
+
+.card-likes .stat-icon {
+  color: #fff;
+}
+
+.card-duration .stat-icon-wrapper {
+  background: #d97706;
+}
+
+.card-duration .stat-icon {
+  color: #fff;
+}
+
+.card-visitors .stat-icon-wrapper {
+  background: #334155;
+}
+
+.card-visitors .stat-icon {
+  color: #fff;
+}
+
+.chart-card,
+.section-card {
+  border-radius: 16px;
+  border: 1px solid var(--line-soft);
+  overflow: hidden;
+  box-shadow: none;
+}
+
+.chart-card :deep(.el-card__body),
+.section-card :deep(.el-card__body) {
+  padding: 24px;
+}
+
+.section-card :deep(.el-card__header) {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
 }
 
 .card-header {
@@ -352,10 +455,41 @@ onBeforeUnmount(() => {
   align-items: center;
 }
 
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.header-icon {
+  font-size: 20px;
+  color: var(--brand-strong);
+}
+
+.header-icon.warning {
+  color: #f56c6c;
+}
+
+.clear-btn {
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 500;
+}
+
+.chart-container {
+  width: 100%;
+  height: 400px;
+}
+
 .error-stats {
   .error-total {
-    margin-bottom: 16px;
+    margin-bottom: 20px;
     font-size: 16px;
+    color: #1e293b;
+    font-weight: 500;
   }
 
   .error-list {
@@ -368,24 +502,38 @@ onBeforeUnmount(() => {
     display: flex;
     align-items: center;
     gap: 16px;
-    padding: 12px;
-    background: #f5f7fa;
-    border-radius: 4px;
+    padding: 16px 20px;
+    background: #fef2f2;
+    border-radius: 12px;
+    border: 1px solid #fecaca;
+    transition: all 0.2s ease;
 
-    .error-path {
-      font-family: monospace;
-      color: #409eff;
-      flex: 1;
+    &:hover {
+      background: #fee2e2;
+      transform: translateX(4px);
     }
+  }
 
-    .error-type {
-      color: #f56c6c;
-      font-weight: 500;
-    }
+  .error-path {
+    font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+    color: var(--brand-strong);
+    flex: 1;
+    font-weight: 500;
+  }
 
-    .error-count {
-      color: #909399;
-    }
+  .error-type {
+    color: #f56c6c;
+    font-weight: 600;
+    padding: 4px 12px;
+    background: rgba(245, 108, 108, 0.1);
+    border-radius: 6px;
+    font-size: 13px;
+  }
+
+  .error-count {
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 14px;
   }
 }
 </style>

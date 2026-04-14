@@ -295,7 +295,7 @@ onMounted(async () => {
 
 <style scoped>
 .article-manage-container {
-  padding: 20px;
+  padding: 0;
 }
 
 .card-header {
@@ -322,5 +322,19 @@ onMounted(async () => {
     border-radius: 4px;
     border: 1px solid #ddd;
   }
+}
+
+:deep(.el-card) {
+  border: 1px solid var(--line-soft);
+  box-shadow: none;
+}
+
+:deep(.el-card__header) {
+  background: #fff;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+:deep(.el-table) {
+  --el-table-header-bg-color: #f8fafc;
 }
 </style>

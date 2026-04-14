@@ -1,0 +1,14 @@
+
+{
+  "name": "damn-blog",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev:backend": "cd damn & pnpm run start:dev",
+    "dev:frontend": "cd damn-frontend & pnpm run dev",
+    "dev": "npm-run-all2 --parallel dev:backend dev:frontend"
+  },
+  "devDependencies": {
+    "npm-run-all2": "^8.0.4"
+  }
+}

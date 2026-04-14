@@ -1,0 +1,4 @@
+.trae/documents/*
+.trae/skills/*
+.trae/specs/*
+node_modules

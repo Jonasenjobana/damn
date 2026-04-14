@@ -1,4 +1,7 @@
 # Logs
+.trae/documents/*
+.trae/skills/*
+.trae/specs/*
 logs
 *.log
 npm-debug.log*

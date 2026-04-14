@@ -1,4 +1,9 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler, Inject, forwardRef } from '@nestjs/common';
+import {
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+} from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { randomBytes } from 'crypto';
 import * as geoip from 'geoip-lite';
@@ -48,18 +53,28 @@ export class VisitorFingerprintInterceptor implements NestInterceptor {
     const ip = request.ip || request.connection?.remoteAddress || 'unknown';
     const userAgent = request.headers['user-agent'] || 'unknown';
 
-    setTimeout(() => {
-      this.recordVisitor(ip, fingerprint, userAgent);
+    setTimeout(async () => {
+      await this.recordVisitor(ip, fingerprint, userAgent);
     }, 0);
 
     return next.handle();
   }
 
-  private async recordVisitor(ip: string, fingerprint: string, userAgent: string) {
+  private async recordVisitor(
+    ip: string,
+    fingerprint: string,
+    userAgent: string,
+  ) {
     try {
       let geo: any = null;
-      
-      if (ip && ip !== '127.0.0.1' && ip !== '::1' && !ip.startsWith('192.168.') && !ip.startsWith('10.')) {
+
+      if (
+        ip &&
+        ip !== '127.0.0.1' &&
+        ip !== '::1' &&
+        !ip.startsWith('192.168.') &&
+        !ip.startsWith('10.')
+      ) {
         geo = geoip.lookup(ip);
       }
 
