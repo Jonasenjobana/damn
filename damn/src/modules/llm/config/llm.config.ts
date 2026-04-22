@@ -1,9 +1,6 @@
-export type LLMProvider = 'openai' | 'anthropic';
-
 export interface LLMConfig {
   apiKey: string;
   baseURL: string;
-  provider: LLMProvider;
   model: string;
   maxContextMessages: number;
   temperature: number;
@@ -11,7 +8,6 @@ export interface LLMConfig {
 }
 
 export const getDefaultLLMConfig = (): LLMConfig => ({
-  provider: (process.env.LLM_PROVIDER as LLMProvider) || 'openai',
   apiKey: process.env.LLM_API_KEY || '',
   baseURL: process.env.LLM_BASE_URL || 'https://api.openai.com/v1',
   model: process.env.LLM_MODEL || 'gpt-3.5-turbo',

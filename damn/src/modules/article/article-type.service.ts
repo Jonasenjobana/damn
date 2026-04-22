@@ -3,11 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ArticleType } from './entities/article-type.entity';
 import { CreateArticleTypeDto, UpdateArticleTypeDto } from './dto/article-type.dto';
-
-function formatDate(date: Date): string {
-  const pad = (n: number) => n.toString().padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-}
+import { formatDate } from '../../common/utils';
 
 function formatTypeDates(type: any): any {
   return {
@@ -60,5 +56,12 @@ export class ArticleTypeService {
     }
     articleType.is_deleted = 1;
     return this.articleTypeRepo.save(articleType);
+  }
+
+  async updateSort(orders: { id: number; sort: number }[]) {
+    for (const item of orders) {
+      await this.articleTypeRepo.update(item.id, { sort: item.sort });
+    }
+    return true;
   }
 }

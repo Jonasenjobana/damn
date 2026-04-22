@@ -4,11 +4,7 @@ import { Repository } from 'typeorm';
 import { Article } from './entities/article.entity';
 import { CreateArticleDto, UpdateArticleDto } from './dto/article.dto';
 import { ArticleStatsService } from './article-stats.service';
-
-function formatDate(date: Date): string {
-  const pad = (n: number) => n.toString().padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-}
+import { formatDate } from '../../common/utils';
 
 function formatArticleDates(article: any): any {
   return {

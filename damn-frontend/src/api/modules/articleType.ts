@@ -15,4 +15,7 @@ export const articleTypeAPI = {
   delete(id: number): Promise<ApiResponse<null>> {
     return request.delete(`/article-type/delete/${id}`)
   },
+  updateSort(orders: { id: number; sort: number }[]): Promise<ApiResponse<null>> {
+    return request.post('/article-type/update-sort', { orders })
+  },
 }

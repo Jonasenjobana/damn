@@ -1,5 +1,6 @@
 ---
-alwaysApply: true
+alwaysApply: false
+description: 提供给前端json接口相关
 ---
 # 后端代码规范
 ## 接口规范

@@ -2,3 +2,4 @@
 .trae/skills/*
 .trae/specs/*
 node_modules
+*.db

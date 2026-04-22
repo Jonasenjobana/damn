@@ -1,107 +1,110 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useArticleTypeStore } from '@/stores/modules/articleType'
-import type { ArticleType, CreateArticleTypeDTO, UpdateArticleTypeDTO } from '@/types/articleType'
-import {
-  ElTable,
-  ElTableColumn,
-  ElButton,
-  ElDialog,
-  ElForm,
-  ElFormItem,
-  ElInput,
-  ElSwitch,
-  ElMessage,
-  ElMessageBox,
-  ElCard,
-} from 'element-plus'
+import { ref, onMounted } from "vue";
+import { useArticleTypeStore } from "@/stores/modules/articleType";
+import type { ArticleType, CreateArticleTypeDTO, UpdateArticleTypeDTO } from "@/types/articleType";
+import { ElTable, ElTableColumn, ElButton, ElDialog, ElForm, ElFormItem, ElInput, ElSwitch, ElMessage, ElMessageBox, ElCard, ElIcon } from "element-plus";
+import { Rank } from "@element-plus/icons-vue";
+import draggable from "vuedraggable";
 
-const articleTypeStore = useArticleTypeStore()
+const articleTypeStore = useArticleTypeStore();
 
-const dialogVisible = ref(false)
-const dialogTitle = ref('创建类型')
-const currentType = ref<ArticleType | null>(null)
+const dialogVisible = ref(false);
+const dialogTitle = ref("创建类型");
+const currentType = ref<ArticleType | null>(null);
 
 const formData = ref<CreateArticleTypeDTO & UpdateArticleTypeDTO>({
-  name: '',
+  name: "",
   sort: 0,
   status: 1,
-})
+});
 
 function openCreateDialog() {
-  dialogTitle.value = '创建类型'
-  currentType.value = null
+  dialogTitle.value = "创建类型";
+  currentType.value = null;
   formData.value = {
-    name: '',
+    name: "",
     sort: 0,
     status: 1,
-  }
-  dialogVisible.value = true
+  };
+  dialogVisible.value = true;
 }
 
 function openEditDialog(type: ArticleType) {
-  dialogTitle.value = '编辑类型'
-  currentType.value = type
+  dialogTitle.value = "编辑类型";
+  currentType.value = type;
   formData.value = {
     name: type.name,
     sort: type.sort,
     status: type.status,
-  }
-  dialogVisible.value = true
+  };
+  dialogVisible.value = true;
 }
 
 async function handleSubmit() {
   if (!formData.value.name) {
-    ElMessage.warning('请输入类型名称')
-    return
+    ElMessage.warning("请输入类型名称");
+    return;
   }
 
   try {
     if (currentType.value) {
-      await articleTypeStore.updateType(currentType.value.id, formData.value)
-      ElMessage.success('更新成功')
+      await articleTypeStore.updateType(currentType.value.id, formData.value);
+      ElMessage.success("更新成功");
     } else {
-      await articleTypeStore.createType(formData.value)
-      ElMessage.success('创建成功')
+      await articleTypeStore.createType(formData.value);
+      ElMessage.success("创建成功");
     }
-    dialogVisible.value = false
-    await articleTypeStore.fetchTypes()
+    dialogVisible.value = false;
+    await articleTypeStore.fetchTypes();
   } catch (error) {
-    ElMessage.error('操作失败')
+    ElMessage.error("操作失败");
   }
 }
 
 async function handleDelete(type: ArticleType) {
   try {
-    await ElMessageBox.confirm(`确定要删除类型"${type.name}"吗？`, '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    })
-    await articleTypeStore.deleteType(type.id)
-    ElMessage.success('删除成功')
+    await ElMessageBox.confirm(`确定要删除类型"${type.name}"吗？`, "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning",
+    });
+    await articleTypeStore.deleteType(type.id);
+    ElMessage.success("删除成功");
   } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error('删除失败')
+    if (error !== "cancel") {
+      ElMessage.error("删除失败");
     }
   }
 }
 
 function getStatusText(status: number) {
-  return status === 1 ? '启用' : '禁用'
+  return status === 1 ? "启用" : "禁用";
 }
 
 function getStatusType(status: number) {
-  return status === 1 ? 'success' : 'info'
+  return status === 1 ? "success" : "info";
 }
 
 function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('zh-CN')
+  return new Date(dateStr).toLocaleDateString("zh-CN");
+}
+
+async function onDragEnd() {
+  try {
+    const orders = articleTypeStore.types.map((item, index) => ({
+      id: item.id,
+      sort: index,
+    }));
+    await articleTypeStore.updateSort(orders);
+    ElMessage.success("排序保存成功");
+  } catch (error) {
+    ElMessage.error("排序保存失败");
+  }
 }
 
 onMounted(async () => {
-  await articleTypeStore.fetchTypes()
-})
+  await articleTypeStore.fetchTypes();
+});
 </script>
 
 <template>
@@ -114,26 +117,36 @@ onMounted(async () => {
         </div>
       </template>
 
-      <ElTable :data="articleTypeStore.types" v-loading="articleTypeStore.loading" stripe>
-        <ElTableColumn prop="name" label="名称" min-width="200" />
-        <ElTableColumn prop="sort" label="排序" width="120" align="center" />
-        <ElTableColumn prop="status" label="状态" width="120" align="center">
-          <template #default="{ row }">
-            <el-tag :type="getStatusType(row.status)">{{ getStatusText(row.status) }}</el-tag>
-          </template>
-        </ElTableColumn>
-        <ElTableColumn prop="createTime" label="创建时间" width="120">
-          <template #default="{ row }">
-            {{ formatDate(row.createTime) }}
-          </template>
-        </ElTableColumn>
-        <ElTableColumn label="操作" width="200" fixed="right">
-          <template #default="{ row }">
-            <ElButton size="small" type="primary" @click="openEditDialog(row)">编辑</ElButton>
-            <ElButton size="small" type="danger" @click="handleDelete(row)">删除</ElButton>
-          </template>
-        </ElTableColumn>
-      </ElTable>
+      <el-table :data="articleTypeStore.types" v-loading="articleTypeStore.loading" stripe>
+        <template #tbody>
+          <draggable tag="tbody" v-model="articleTypeStore.types" item-key="id" handle=".drag-handle" animation="300" @end="onDragEnd">
+            <template #item="{ element, index }">
+              <tr class="el-table__row">
+                <td class="el-table__cell" style="width: 50px; text-align: center;">
+                  <el-icon class="drag-handle"><Rank /></el-icon>
+                </td>
+                <td class="el-table__cell" style="min-width: 200px;">{{ element.name }}</td>
+                <td class="el-table__cell" style="width: 120px; text-align: center;">{{ element.sort }}</td>
+                <td class="el-table__cell" style="width: 120px; text-align: center;">
+                  <el-tag :type="getStatusType(element.status)">{{ getStatusText(element.status) }}</el-tag>
+                </td>
+                <td class="el-table__cell" style="width: 120px;">{{ formatDate(element.createTime) }}</td>
+                <td class="el-table__cell" style="width: 200px; text-align: right;">
+                  <el-button size="small" type="primary" @click="openEditDialog(element)">编辑</el-button>
+                  <el-button size="small" type="danger" @click="handleDelete(element)">删除</el-button>
+                </td>
+              </tr>
+            </template>
+          </draggable>
+        </template>
+
+        <el-table-column label="" width="50" align="center" />
+        <el-table-column prop="name" label="名称" min-width="200" />
+        <el-table-column prop="sort" label="排序" width="120" align="center" />
+        <el-table-column prop="status" label="状态" width="120" align="center" />
+        <el-table-column prop="createTime" label="创建时间" width="120" />
+        <el-table-column label="操作" width="200" fixed="right" />
+      </el-table>
     </ElCard>
 
     <ElDialog v-model="dialogVisible" :title="dialogTitle" width="500px" destroy-on-close>
@@ -143,21 +156,11 @@ onMounted(async () => {
         </ElFormItem>
 
         <ElFormItem label="排序">
-          <ElInput
-            v-model.number="formData.sort"
-            type="number"
-            placeholder="数值越大越靠前"
-          />
+          <ElInput v-model.number="formData.sort" type="number" placeholder="数值越大越靠前" />
         </ElFormItem>
 
         <ElFormItem label="状态" v-if="currentType">
-          <ElSwitch
-            v-model="formData.status"
-            :active-value="1"
-            :inactive-value="0"
-            active-text="启用"
-            inactive-text="禁用"
-          />
+          <ElSwitch v-model="formData.status" :active-value="1" :inactive-value="0" active-text="启用" inactive-text="禁用" />
         </ElFormItem>
       </ElForm>
 
@@ -186,11 +189,22 @@ onMounted(async () => {
 }
 
 :deep(.el-card__header) {
-  background: #fff;
+  background: transparent;
   border-bottom: 1px solid var(--line-soft);
 }
 
 :deep(.el-table) {
-  --el-table-header-bg-color: #f8fafc;
+  --el-table-header-bg-color: var(--bg-soft);
+}
+
+.drag-handle {
+  cursor: grab;
+  color: var(--text-secondary);
+  width: 20px;
+  height: 20px;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
 }
 </style>

@@ -1,5 +1,6 @@
 ---
-alwaysApply: true
+alwaysApply: false
+description: 涉及数据库相关
 ---
 # 后端规范
 ## 数据库规范
