@@ -1,12 +1,8 @@
 # compiled output
-.trae/documents/*
-.trae/skills/*
-.trae/specs/*
 /dist
 /node_modules
 /build
-/resource/*
-damn.db
+
 # Logs
 logs
 *.log
