@@ -103,6 +103,11 @@ export const useLLMStore = defineStore('llm', () => {
     }
   };
 
+  const removeLastMessage = () => {
+    if (messages.value.length === 0) return;
+    messages.value.pop();
+  };
+
   const clearMessages = () => {
     messages.value = [];
   };
@@ -148,6 +153,7 @@ export const useLLMStore = defineStore('llm', () => {
     updateTitle,
     addMessage,
     appendToLastMessage,
+    removeLastMessage,
     clearMessages,
     switchConversation,
     getBills,

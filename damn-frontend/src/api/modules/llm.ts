@@ -64,9 +64,10 @@ export const llmAPI = {
     onChunk: (chunk: StreamChunk) => void,
     onError: (error: Error) => void,
     onComplete: () => void,
-  ) => {
+  ): { abort: () => void } => {
     const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
     const url = `${baseURL}/llm/conversations/${conversationId}/chat`;
+    const controller = new AbortController();
 
     fetch(url, {
       method: 'POST',
@@ -75,6 +76,7 @@ export const llmAPI = {
         'Credentials': 'include',
       },
       body: JSON.stringify({ content }),
+      signal: controller.signal,
     })
       .then(response => {
         if (!response.ok) {
@@ -108,13 +110,21 @@ export const llmAPI = {
             }
             read();
           }).catch(error => {
-            onError(error);
+            if (error.name !== 'AbortError') {
+              onError(error);
+            }
           });
         }
         read();
       })
       .catch(error => {
-        onError(error);
+        if (error.name !== 'AbortError') {
+          onError(error);
+        }
       });
+
+    return {
+      abort: () => controller.abort(),
+    };
   },
 };

@@ -78,15 +78,36 @@
         </div>
       </el-header>
 
+      <div class="tabs-bar" v-if="openedTabs.length > 0">
+        <div
+          v-for="tab in openedTabs"
+          :key="tab.path"
+          :class="{ 'tab-item': true, active: currentPath === tab.path }"
+          @click="switchTab(tab.path)"
+        >
+          <span class="tab-title">{{ tab.title }}</span>
+          <el-icon
+            class="tab-close"
+            @click.stop="closeTab(tab.path)"
+          >
+            <Close />
+          </el-icon>
+        </div>
+      </div>
+
       <el-main class="main-content">
-        <router-view />
+        <router-view v-slot="{ Component }">
+          <keep-alive>
+            <component :is="Component" />
+          </keep-alive>
+        </router-view>
       </el-main>
     </el-container>
   </el-container>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import {
@@ -102,9 +123,15 @@ import {
   Setting,
   Sunny,
   Moon,
+  Close,
 } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/modules/auth'
 import { useThemeStore } from '@/stores/modules/theme'
+
+interface TabInfo {
+  title: string
+  path: string
+}
 
 const route = useRoute()
 const router = useRouter()
@@ -121,9 +148,53 @@ const pageTitle = computed(() => {
     '/admin/articles': '文章管理',
     '/admin/article-types': '文章类型管理',
     '/admin/llm-chat': 'AI 聊天',
+    '/admin/articles/create': '创建文章',
+  }
+  if (route.path.match(/\/admin\/articles\/\d+\/edit/)) {
+    return '编辑文章'
   }
   return titles[route.path] || '管理后台'
 })
+
+const openedTabs = ref<TabInfo[]>([])
+const currentPath = computed(() => route.path)
+
+const getTabTitle = (path: string): string => {
+  if (path === '/admin/dashboard') return '仪表盘'
+  if (path === '/admin/articles') return '文章管理'
+  if (path === '/admin/article-types') return '文章类型管理'
+  if (path === '/admin/llm-chat') return 'AI 聊天'
+  if (path === '/admin/articles/create') return '创建文章'
+  if (path.match(/\/admin\/articles\/\d+\/edit/)) return '编辑文章'
+  return ''
+}
+
+const addTab = (path: string) => {
+  const title = getTabTitle(path)
+  if (!title) return
+  const exists = openedTabs.value.find(t => t.path === path)
+  if (!exists) {
+    openedTabs.value.push({ title, path })
+  }
+}
+
+const switchTab = (path: string) => {
+  router.push(path)
+}
+
+const closeTab = (path: string) => {
+  const index = openedTabs.value.findIndex(t => t.path === path)
+  if (index === -1) return
+  openedTabs.value.splice(index, 1)
+  if (path === currentPath.value && openedTabs.value.length > 0) {
+    const newIndex = index > 0 ? index - 1 : 0
+    router.push(openedTabs.value[newIndex].path)
+  }
+}
+
+watch(currentPath, (newPath) => {
+  addTab(newPath)
+}, { immediate: true })
 
 const handleCommand = async (command: string) => {
   if (command === 'home') {
@@ -368,6 +439,64 @@ const handleCommand = async (command: string) => {
 
 .user-info:hover .dropdown-icon {
   transform: translateY(2px);
+}
+
+.tabs-bar {
+  display: flex;
+  gap: 4px;
+  padding: 8px 16px;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--line-soft);
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.tab-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px 6px 0 0;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+  border-bottom: none;
+}
+
+.tab-item:hover {
+  background: var(--bg-soft);
+  color: var(--text-primary);
+}
+
+.tab-item.active {
+  background: var(--bg-base);
+  color: var(--color-brand);
+  border-color: var(--line-soft);
+}
+
+.tab-title {
+  font-size: 13px;
+}
+
+.tab-close {
+  font-size: 14px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-close:hover {
+  opacity: 1;
+  background: var(--color-danger);
+  color: #fff;
 }
 
 .main-content {

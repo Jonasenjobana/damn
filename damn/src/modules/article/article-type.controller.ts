@@ -50,4 +50,15 @@ export class ArticleTypeController {
     await this.articleTypeService.remove(Number(id));
     return CustomApiResponse.success(null, '删除成功');
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('update-sort')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '批量更新排序（拖拽排序后保存，需认证）' })
+  @ApiResponse({ status: 200, description: '更新成功' })
+  @ApiResponse({ status: 401, description: '未授权' })
+  async updateSort(@Body() body: { orders: { id: number; sort: number }[] }) {
+    await this.articleTypeService.updateSort(body.orders);
+    return CustomApiResponse.success(null, '排序更新成功');
+  }
 }

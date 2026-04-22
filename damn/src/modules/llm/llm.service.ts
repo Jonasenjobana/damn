@@ -2,14 +2,15 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UploadService } from '../upload/upload.service';
-import * as fs from 'fs';
-import * as path from 'path';
 import { Conversation, ConversationType } from './entities/conversation.entity';
 import { Message, MessageRole } from './entities/message.entity';
 import { Bill, BillItem } from './entities/bill.entity';
-import { getDefaultLLMConfig, LLMConfig, LLMProvider } from './config/llm.config';
+import { getDefaultLLMConfig, LLMConfig } from './config/llm.config';
 import { BillTip } from './config/bill.prompt';
 import { Observable } from 'rxjs';
+import { streamText } from 'ai';
+import { createOpenAI } from '@ai-sdk/openai';
+import { formatDate } from '../../common/utils';
 
 export interface ChatMessageContentItem {
   type: string;
@@ -53,11 +54,16 @@ export class LLMService {
     console.log("🚀 ~ LLMService ~ constructor ~ this.config:", this.config);
   }
 
-  async getConversations(userId: number): Promise<Conversation[]> {
-    return this.conversationRepository.find({
+  async getConversations(userId: number): Promise<any[]> {
+    const conversations = await this.conversationRepository.find({
       where: { userId },
       order: { updateTime: 'DESC' },
     });
+    return conversations.map(conv => ({
+      ...conv,
+      createTime: formatDate(conv.createTime),
+      updateTime: formatDate(conv.updateTime),
+    }));
   }
 
   async createConversation(userId: number, modelName?: string, conversationType?: ConversationType): Promise<Conversation> {
@@ -83,18 +89,27 @@ export class LLMService {
     await this.conversationRepository.delete(id);
   }
 
-  async getMessages(conversationId: number): Promise<Message[]> {
-    return this.messageRepository.find({
+  async getMessages(conversationId: number): Promise<any[]> {
+    const messages = await this.messageRepository.find({
       where: { conversationId },
       order: { createTime: 'ASC' },
     });
+    return messages.map(msg => ({
+      ...msg,
+      createTime: formatDate(msg.createTime),
+    }));
   }
 
-  async getBills(conversationId: number): Promise<Bill[]> {
-    return this.billRepository.find({
+  async getBills(conversationId: number): Promise<any[]> {
+    const bills = await this.billRepository.find({
       where: { conversationId },
       order: { createTime: 'ASC' },
     });
+    return bills.map(bill => ({
+      ...bill,
+      createTime: formatDate(bill.createTime),
+      updateTime: formatDate(bill.updateTime),
+    }));
   }
 
   async deleteBill(id: number): Promise<void> {
@@ -300,52 +315,21 @@ export class LLMService {
     const messages = await this.buildMessages(existingMessages, conversation.conversationType);
 
     return new Observable<{ chunk: string; done: boolean }>(subscriber => {
-      this.callLLMStream(messages, conversationId, conversation.conversationType, subscriber);
+      this.callLLMStream(messages, conversationId, conversation.conversationType, conversation.modelName, subscriber).catch(err => {
+        subscriber.error(err);
+      });
     });
-  }
-
-  private buildRequestBody(provider: LLMProvider, model: string, temperature: number, maxTokens: number, messages: ChatMessage[]) {
-    if (provider === 'anthropic') {
-      return {
-        model,
-        messages,
-        stream: true,
-        temperature,
-        max_tokens: maxTokens,
-        anthropic_version: 'vertex-2023-10-16',
-      };
-    }
-
-    return {
-      model,
-      messages,
-      stream: true,
-      temperature,
-      max_tokens: maxTokens,
-    };
-  }
-
-  private extractChunk(provider: LLMProvider, parsed: any): string | null {
-    if (provider === 'anthropic') {
-      return parsed.type === 'content_block_delta' ? parsed.delta?.text : null;
-    }
-
-    return parsed.choices?.[0]?.delta?.content || null;
-  }
-
-  private joinURL(base: string, path: string): string {
-    const baseSlash = base.endsWith('/') ? base : base + '/';
-    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-    return new URL(cleanPath, baseSlash).toString();
   }
 
   private async callLLMStream(
     messages: ChatMessage[],
     conversationId: number,
     conversationType: ConversationType,
+    modelName: string,
     subscriber: any,
   ): Promise<void> {
-    const { apiKey, baseURL, provider, model, temperature, maxTokens } = this.config;
+    const { apiKey, baseURL, temperature, maxTokens } = this.config;
+    const model = modelName || this.config.model;
 
     if (!apiKey) {
       subscriber.error(new Error('LLM API Key 未配置'));
@@ -353,92 +337,61 @@ export class LLMService {
     }
 
     try {
-      const endpoint = provider === 'anthropic'
-        ? this.joinURL(baseURL, 'v1/messages')
-        : this.joinURL(baseURL, 'chat/completions');
-
-      const body = this.buildRequestBody(provider, model, temperature, maxTokens, messages);
-
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify(body),
+      const openai = createOpenAI({
+        apiKey,
+        baseURL,
       });
+      const aiModel = openai(model);
 
-      if (!response.ok) {
-        const error = await response.text();
-        subscriber.error(new Error(`LLM API 错误: ${response.status} - ${error}`));
-        return;
-      }
+      const { textStream } = await streamText({
+          model: aiModel,
+          messages: messages as any,
+          temperature,
+          maxTokens,
+        } as any);
 
-      const reader = response.body?.getReader();
-      if (!reader) {
-        subscriber.error(new Error('无法读取响应流'));
-        return;
-      }
-
-      const decoder = new TextDecoder();
       let fullContent = '';
-      let fullResponse = '';
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
-          if (conversationType === 'bill') {
-            try {
-              const jsonStr = this.extractJsonFromContent(fullContent);
-              const result = JSON.parse(jsonStr) as BillRecognizeResponse;
-              if (result.rlt === 0 && result.data && result.data.length > 0) {
-                const lastMessage = await this.addMessage(conversationId, 'assistant', fullContent);
-                await this.saveBills(conversationId, lastMessage.id, result.data);
-              }
-            } catch (e) {
-              console.error('Failed to parse bill JSON:', e);
-            }
-          } else {
-            const estimatedTokens = Math.ceil(fullContent.length / 4);
-            await this.addMessage(
-              conversationId,
-              'assistant',
-              fullContent,
-              estimatedTokens,
-            );
-          }
-          subscriber.next({ chunk: '', done: true });
-          subscriber.complete();
-          break;
-        }
-
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
-
-        fullResponse += chunk;
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6).trim();
-            if (data === '[DONE]') {
-              continue;
-            }
-            if (data) {
-              try {
-                const parsed = JSON.parse(data);
-                const delta = this.extractChunk(provider, parsed);
-                if (delta) {
-                  fullContent += delta;
-                  subscriber.next({ chunk: delta, done: false });
-                }
-              } catch (e) {
-              }
-            }
-          }
-        }
+      for await (const chunk of textStream) {
+        fullContent += chunk;
+        subscriber.next({ chunk, done: false });
       }
+
+      if (conversationType === 'bill') {
+        try {
+          const jsonStr = this.extractJsonFromContent(fullContent);
+          const result = JSON.parse(jsonStr) as BillRecognizeResponse;
+          if (result.rlt === 0 && result.data && result.data.length > 0) {
+            const lastMessage = await this.addMessage(conversationId, 'assistant', fullContent);
+            await this.saveBills(conversationId, lastMessage.id, result.data);
+          } else {
+            const errorMsg = '❌ 账单识别失败：AI未能识别出有效的账单数据，请检查图片是否清晰，或重新上传。';
+            await this.addMessage(conversationId, 'assistant', errorMsg);
+            subscriber.error(new Error(errorMsg));
+            return;
+          }
+        } catch (e) {
+          console.error('Failed to parse bill JSON:', e);
+          const errorMsg = '❌ 账单识别失败：无法解析AI返回结果，这可能是因为AI未能识别出这是账单，请重新上传或尝试其他模型。';
+          await this.addMessage(conversationId, 'assistant', errorMsg);
+          subscriber.error(new Error(errorMsg));
+          return;
+        }
+      } else {
+        const estimatedTokens = Math.ceil(fullContent.length / 4);
+        await this.addMessage(
+          conversationId,
+          'assistant',
+          fullContent,
+          estimatedTokens,
+        );
+      }
+
+      subscriber.next({ chunk: '', done: true });
+      subscriber.complete();
     } catch (error) {
-      subscriber.error(error as Error);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      subscriber.error(new Error(`LLM 调用失败: ${errorMsg}`));
     }
   }
 }

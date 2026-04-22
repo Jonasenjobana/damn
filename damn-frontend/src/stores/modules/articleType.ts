@@ -51,6 +51,16 @@ export const useArticleTypeStore = defineStore('articleType', () => {
     }
   }
 
+  async function updateSort(orders: { id: number; sort: number }[]) {
+    try {
+      await articleTypeAPI.updateSort(orders)
+      return true
+    } catch (error) {
+      console.error('Failed to update sort:', error)
+      throw error
+    }
+  }
+
   return {
     types,
     loading,
@@ -58,5 +68,6 @@ export const useArticleTypeStore = defineStore('articleType', () => {
     createType,
     updateType,
     deleteType,
+    updateSort,
   }
 })
