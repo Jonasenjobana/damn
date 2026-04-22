@@ -2,3 +2,5 @@
 .trae/skills/*
 .trae/specs/*
 node_modules
+# 忽略后端数据库文件
+damn/damn.db
