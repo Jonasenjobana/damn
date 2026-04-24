@@ -8,9 +8,13 @@ import { Bill, BillItem } from './entities/bill.entity';
 import { getDefaultLLMConfig, LLMConfig } from './config/llm.config';
 import { BillTip } from './config/bill.prompt';
 import { Observable } from 'rxjs';
-import { streamText } from 'ai';
-import { createOpenAI } from '@ai-sdk/openai';
+import { ChatOpenAI } from '@langchain/openai';
+import { HumanMessage, SystemMessage, AIMessage, BaseMessage } from '@langchain/core/messages';
 import { formatDate } from '../../common/utils';
+import * as dotenv from 'dotenv';
+
+// 加载环境变量
+dotenv.config();
 
 export interface ChatMessageContentItem {
   type: string;
@@ -51,6 +55,16 @@ export class LLMService {
     private uploadService: UploadService,
   ) {
     this.config = getDefaultLLMConfig();
+    // 优先从环境变量读取配置
+    if (process.env.LLM_API_KEY) {
+      this.config.apiKey = process.env.LLM_API_KEY;
+    }
+    if (process.env.LLM_MODEL) {
+      this.config.model = process.env.LLM_MODEL;
+    }
+    if (process.env.LLM_BASE_URL) {
+      this.config.baseURL = process.env.LLM_BASE_URL;
+    }
     console.log("🚀 ~ LLMService ~ constructor ~ this.config:", this.config);
   }
 
@@ -337,24 +351,51 @@ export class LLMService {
     }
 
     try {
-      const openai = createOpenAI({
+      // 初始化LangChain ChatOpenAI实例
+      const chatModel = new ChatOpenAI({
         apiKey,
-        baseURL,
+        model,
+        temperature,
+        maxTokens,
+        configuration: {
+          baseURL,
+        },
       });
-      const aiModel = openai(model);
 
-      const { textStream } = await streamText({
-          model: aiModel,
-          messages: messages as any,
-          temperature,
-          maxTokens,
-        } as any);
+      // 将消息转换为LangChain的消息格式
+      const langchainMessages: BaseMessage[] = messages.map(msg => {
+        if (msg.role === 'system') {
+          return new SystemMessage(msg.content as string);
+        } else if (msg.role === 'assistant') {
+          return new AIMessage(msg.content as string);
+        } else {
+          // user角色，可能包含图片
+          if (Array.isArray(msg.content)) {
+            // 多模态内容（图片+文本）
+            const content = msg.content.map(item => {
+              if (item.type === 'text') {
+                return { type: 'text', text: item.text };
+              } else if (item.type === 'image_url') {
+                return { type: 'image_url', image_url: item.image_url };
+              }
+              return item;
+            });
+            return new HumanMessage({ content: content as any });
+          } else {
+            return new HumanMessage(msg.content as string);
+          }
+        }
+      });
+
+      // 调用流式接口
+      const stream = await chatModel.stream(langchainMessages);
 
       let fullContent = '';
 
-      for await (const chunk of textStream) {
-        fullContent += chunk;
-        subscriber.next({ chunk, done: false });
+      for await (const chunk of stream) {
+        const chunkText = chunk.content as string;
+        fullContent += chunkText;
+        subscriber.next({ chunk: chunkText, done: false });
       }
 
       if (conversationType === 'bill') {

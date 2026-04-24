@@ -111,11 +111,11 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 .logo-badge {
   width: 40px;
   height: 40px;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   display: grid;
   place-items: center;
   color: white;
-  background: linear-gradient(145deg, var(--brand), var(--brand-strong));
+  background: linear-gradient(145deg, var(--color-primary), var(--color-primary-active));
 }
 
 .logo-text h1 {
@@ -136,7 +136,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 }
 
 .admin-btn {
-  border-radius: 11px;
+  border-radius: var(--radius-sm);
 }
 
 .theme-btn {
@@ -190,8 +190,8 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 
 :deep(.el-menu-item:hover),
 :deep(.el-menu-item.is-active) {
-  color: var(--brand-strong);
-  background: color-mix(in srgb, var(--brand) 10%, white);
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
 }
 
 @media (max-width: 768px) {

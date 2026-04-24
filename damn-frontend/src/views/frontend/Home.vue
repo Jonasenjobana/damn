@@ -223,8 +223,8 @@ onMounted(loadArticles)
   display: inline-flex;
   padding: 6px 11px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--brand) 12%, white);
-  color: var(--brand-strong);
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  color: var(--color-primary-active);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -244,9 +244,9 @@ onMounted(loadArticles)
 .stat-card {
   min-width: 92px;
   padding: 14px;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   background: var(--bg-soft);
-  border: 1px solid var(--line-soft);
+  border: 1px solid var(--border-soft);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -290,7 +290,7 @@ onMounted(loadArticles)
 
 .article-card:hover {
   transform: translateY(-8px);
-  box-shadow: var(--shadow-strong);
+  box-shadow: var(--shadow-level3);
 }
 
 .article-cover {
@@ -306,7 +306,7 @@ onMounted(loadArticles)
 }
 
 .article-cover.empty {
-  background: linear-gradient(145deg, color-mix(in srgb, var(--brand) 45%, white), var(--brand-soft));
+  background: linear-gradient(145deg, color-mix(in srgb, var(--color-primary) 45%, transparent), var(--color-primary-hover));
 }
 
 .cover-fallback {
@@ -327,7 +327,7 @@ onMounted(loadArticles)
 }
 
 .pin-tag {
-  background: var(--danger);
+  background: var(--color-danger);
   border: none;
 }
 

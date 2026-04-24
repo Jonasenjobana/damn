@@ -2,7 +2,9 @@ import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nes
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { LoggerService } from './logger.service';
-
+/**
+ * 所有请求日志
+ */
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
   constructor(private loggerService: LoggerService) {}

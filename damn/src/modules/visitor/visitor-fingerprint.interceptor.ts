@@ -23,7 +23,9 @@ declare module 'express' {
     visitorFingerprint?: string;
   }
 }
-
+/**
+ * 访客指纹（统计相关）
+ */
 @Injectable()
 export class VisitorFingerprintInterceptor implements NestInterceptor {
   constructor(

@@ -224,11 +224,11 @@ const handleCommand = async (command: string) => {
 
 .aside {
   background: var(--bg-soft);
-  box-shadow: 2px 0 16px rgba(15, 23, 42, 0.16);
+  box-shadow: var(--shadow-level2);
   display: flex;
   flex-direction: column;
   position: relative;
-  border-right: 1px solid var(--line-soft);
+  border-right: 1px solid var(--border-soft);
 }
 
 .logo {
@@ -237,15 +237,15 @@ const handleCommand = async (command: string) => {
   align-items: center;
   padding: 0 24px;
   gap: 14px;
-  border-bottom: 1px solid var(--line-soft);
-  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--bg-card);
 }
 
 .logo-icon {
   width: 42px;
   height: 42px;
-  background: var(--brand);
-  border-radius: 12px;
+  background: var(--color-primary);
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -276,12 +276,12 @@ const handleCommand = async (command: string) => {
   height: 52px;
   line-height: 52px;
   margin: 4px 0;
-  border-radius: 12px;
-  color: #94a3b8;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
   font-weight: 500;
   font-size: 15px;
   padding: 0 16px;
-  transition: all 0.3s ease;
+  transition: all var(--transition-normal);
   position: relative;
   overflow: hidden;
 }
@@ -294,13 +294,13 @@ const handleCommand = async (command: string) => {
   transform: translateY(-50%) scaleY(0);
   width: 3px;
   height: 24px;
-  background: var(--brand);
+  background: var(--color-primary);
   border-radius: 0 2px 2px 0;
-  transition: all 0.3s ease;
+  transition: all var(--transition-normal);
 }
 
 .menu .el-menu-item:hover {
-  background: color-mix(in srgb, var(--color-brand) 10%, transparent) !important;
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent) !important;
   color: var(--text-primary);
 }
 
@@ -309,8 +309,8 @@ const handleCommand = async (command: string) => {
 }
 
 .menu .el-menu-item.is-active {
-  background: color-mix(in srgb, var(--color-brand) 18%, transparent) !important;
-  color: var(--color-brand);
+  background: color-mix(in srgb, var(--color-primary) 18%, transparent) !important;
+  color: var(--color-primary);
 }
 
 .menu .el-menu-item.is-active::before {
@@ -328,14 +328,14 @@ const handleCommand = async (command: string) => {
 }
 
 .header {
-  background: var(--bg-elevated);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-level1);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 32px;
   height: 72px;
-  border-bottom: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--border-soft);
 }
 
 .header-left {
@@ -350,7 +350,7 @@ const handleCommand = async (command: string) => {
 }
 
 .title-icon {
-  color: var(--brand);
+  color: var(--color-primary);
   font-size: 20px;
 }
 
@@ -445,8 +445,8 @@ const handleCommand = async (command: string) => {
   display: flex;
   gap: 4px;
   padding: 8px 16px;
-  background: var(--bg-elevated);
-  border-bottom: 1px solid var(--line-soft);
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-soft);
   overflow-x: auto;
   overflow-y: hidden;
 }
@@ -472,8 +472,8 @@ const handleCommand = async (command: string) => {
 
 .tab-item.active {
   background: var(--bg-base);
-  color: var(--color-brand);
-  border-color: var(--line-soft);
+  color: var(--color-primary);
+  border-color: var(--border-soft);
 }
 
 .tab-title {
@@ -508,9 +508,10 @@ const handleCommand = async (command: string) => {
 
 .user-dropdown-menu {
   padding: 8px;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-level3);
+  border: 1px solid var(--border-soft);
+  background: var(--bg-card);
 }
 
 :deep(.el-dropdown-menu__item) {
@@ -528,7 +529,7 @@ const handleCommand = async (command: string) => {
 
 :deep(.el-dropdown-menu__item:hover) {
   background: var(--bg-soft);
-  color: var(--color-brand-strong);
+  color: var(--color-primary-active);
 }
 
 :deep(.el-dropdown-menu__item .el-icon) {
@@ -538,6 +539,6 @@ const handleCommand = async (command: string) => {
 :deep(.el-dropdown-menu__item--divided) {
   margin-top: 6px;
   padding-top: 12px;
-  border-top: 1px solid var(--line-soft);
+  border-top: 1px solid var(--border-soft);
 }
 </style>

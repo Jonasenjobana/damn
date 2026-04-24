@@ -294,10 +294,10 @@ onUnmounted(() => {
 
 .article-header {
   padding: 28px 30px 18px;
-  border-bottom: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--border-soft);
   background:
-    radial-gradient(500px 200px at 10% -20%, color-mix(in srgb, var(--brand) 16%, white), transparent 70%),
-    var(--bg-elevated);
+    radial-gradient(500px 200px at 10% -20%, color-mix(in srgb, var(--color-primary) 16%, transparent), transparent 70%),
+    var(--bg-card);
 }
 
 .tags {
@@ -349,7 +349,7 @@ onUnmounted(() => {
 
 .actions {
   padding: 16px 30px 26px;
-  border-top: 1px solid var(--line-soft);
+  border-top: 1px solid var(--border-soft);
   display: flex;
   gap: 10px;
   justify-content: center;
@@ -391,8 +391,8 @@ onUnmounted(() => {
 
 .toc-item:hover,
 .toc-item.active {
-  background: color-mix(in srgb, var(--brand) 14%, white);
-  color: var(--brand-strong);
+  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  color: var(--color-primary-active);
 }
 
 .empty {
@@ -416,18 +416,17 @@ onUnmounted(() => {
 }
 
 :deep(.markdown-body code) {
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 2px 7px;
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
   font-size: 0.92em;
-  background: color-mix(in srgb, var(--brand) 12%, white);
-  color: var(--brand-strong);
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  color: var(--color-primary-active);
 }
 
 :deep(.markdown-body pre) {
-  border-radius: 14px;
-  background: #0f172a;
-  color: #e2e8f0;
+  border-radius: var(--radius-lg);
+  background: var(--bg-soft);
   overflow-x: auto;
   padding: 16px;
 }
@@ -439,16 +438,16 @@ onUnmounted(() => {
 }
 
 :deep(.markdown-body blockquote) {
-  border-left: 4px solid var(--brand);
+  border-left: 4px solid var(--color-primary);
   padding: 8px 14px;
   margin: 14px 0;
   background: var(--bg-soft);
-  border-radius: 0 8px 8px 0;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
 :deep(.markdown-body img) {
   max-width: 100%;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
 }
 
 @media (max-width: 1080px) {

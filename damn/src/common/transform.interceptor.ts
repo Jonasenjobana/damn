@@ -43,6 +43,9 @@ function transformData(data: any): any {
   return data;
 }
 
+/**
+ * 下划线转驼峰
+ */
 @Injectable()
 export class TransformInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
